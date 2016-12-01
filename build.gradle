@@ -1,0 +1,30 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    jcenter()
+    maven {
+        name 'Spigot'
+        url 'https://hub.spigotmc.org/nexus/content/groups/public/'
+    }
+    maven {
+        name 'Sonatype'
+        url 'https://oss.sonatype.org/content/groups/public'
+    }
+    maven {
+        name 'vault-repo'
+        url 'http://nexus.hc.to/content/repositories/pub_releases'
+    }
+    maven {
+        name 'nyaa'
+        url 'https://raw.githubusercontent.com/NyaaCat/nyaautils/maven-repo'
+    }
+}
+
+dependencies {
+    compile 'org.spigotmc:spigot-api:1.11-R0.1-SNAPSHOT'
+    compile 'net.milkbowl.vault:VaultAPI:1.6'
+    compile 'cat.nyaa:nyaautils:2.0-SNAPSHOT'
+}

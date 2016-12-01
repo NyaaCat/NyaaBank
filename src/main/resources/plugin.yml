@@ -1,0 +1,8 @@
+name: NyaaBank
+main: cat.nyaa.nyaabank.NyaaBank
+description: "Simplified realistic banking system for players to setup their private bank. Designed for NyaaCat server."
+version: 1.0
+depend: [Vault, NyaaUtils]
+softdepend: []
+authors: [RecursiveG]
+website: "https://github.com/NyaaCat/NyaaBank"
