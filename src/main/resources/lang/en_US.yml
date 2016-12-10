@@ -1,0 +1,26 @@
+command:
+  reg:
+    name_duplicate: "Bank name already exists"
+    established: "Bank `%s&r` established. ID={%s}"
+    not_enough_capital: "The player has not that much money"
+  list:
+    list_player: "=== %s's banks ==="
+    list_all: "=== All banks ==="
+    list_item: "%s {Owner: %s, UUID: %s}"
+    list_empty: "No registered bank"
+
+manual:
+  no_description: "No description"
+  no_usage: "No usage"
+
+  help:
+    description: "Show help message"
+    usage: "/nb [subCommands...] help"
+
+  reg:
+    description: "Register a bank"
+    usage: "/nb reg <playerName> <bankName> <bankCapital>"
+
+  list:
+    description: "List the banks"
+    usage: "/nb list [playerName]"

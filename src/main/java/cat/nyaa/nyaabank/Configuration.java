@@ -7,7 +7,7 @@ public class Configuration extends PluginConfigure {
     private final NyaaBank plugin;
 
     @Serializable
-    public String language;
+    public String language = "en_US";
     @Serializable(name = "min_capitalization")
     public int minCapitalization = 1000000;
     @Serializable(name = "interest_cycle")
@@ -23,15 +23,15 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "saving_interest_limit.enabled")
     public boolean savingInterestLimitEnabled = false;
     @Serializable(name = "saving_interest_limit.min")
-    public float savingInterestLimitMin = -1F; // hundred percent
+    public double savingInterestLimitMin = -1F; // hundred percent
     @Serializable(name = "saving_interest_limit.max")
-    public float savingInterestLimitMax = 2F; // hundred percent
+    public double savingInterestLimitMax = 2F; // hundred percent
     @Serializable(name = "debit_interest_limit.enabled")
     public boolean debitInterestLimitEnabled = false;
     @Serializable(name = "debit_interest_limit.min")
-    public float debitInterestLimitMin = 0F; // hundred percent
+    public double debitInterestLimitMin = 0F; // hundred percent
     @Serializable(name = "debit_interest_limit.max")
-    public float debitInterestLimitMax = 5F; // hundred percent
+    public double debitInterestLimitMax = 5F; // hundred percent
     @Serializable(name = "update_interval")
     public int dbUpdateInterval = 86400; // seconds
     @Serializable(name = "sign_color.active")

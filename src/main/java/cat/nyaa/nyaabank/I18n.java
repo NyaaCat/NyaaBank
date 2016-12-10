@@ -5,10 +5,24 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class I18n extends Internationalization{
     private static I18n instance;
-    public I18n(JavaPlugin plugin, String lang) {
-        super(plugin);
+    private final NyaaBank plugin;
+    private final String lang;
+
+    @Override
+    protected JavaPlugin getPlugin() {
+        return plugin;
+    }
+
+    @Override
+    protected String getLanguage() {
+        return lang;
+    }
+
+    public I18n(NyaaBank plugin, String lang) {
         instance = this;
-        load(lang);
+        this.plugin = plugin;
+        this.lang = lang;
+        load();
     }
 
     public static String _(String key, Object... args) {

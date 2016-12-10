@@ -6,3 +6,43 @@ depend: [Vault, NyaaUtils]
 softdepend: []
 authors: [RecursiveG]
 website: "https://github.com/NyaaCat/NyaaBank"
+
+commands:
+  nyaabank:
+    description: The command for NyaaBank
+    aliases: nb
+    permission: nb.command
+    permission-message: "You do not have the required permission: <permission>"
+    usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
+
+
+
+permission:
+  nb.command:
+    description: Run bank command
+    default: true
+  nb.user:
+    description: Default permissions for normal player
+    default: true
+    children:
+      nb.list_self: true
+      nb.info_self: true
+      nb.deposit: true
+      nb.withdraw: true
+      nb.loan: true
+      nb.repay: true
+
+  nb.banker: # this permission node currently unused
+    description: Default permissions for bankers
+    default: false
+
+  nb.admin:
+    description: Permissions for the god
+    default: op
+    children:
+      nb.create_bank: true
+      nb.force_bankrupt: true
+      nb.list_all: true
+      nb.info_all: true
+      nb.top: true
+      nb.reload: true
