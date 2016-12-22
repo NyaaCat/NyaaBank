@@ -1,5 +1,7 @@
-package cat.nyaa.nyaabank.database;
+package cat.nyaa.nyaabank.database.tables;
 
+import cat.nyaa.nyaabank.database.enums.BankStatus;
+import cat.nyaa.nyaabank.database.enums.InterestType;
 import cat.nyaa.utils.database.DataColumn;
 import cat.nyaa.utils.database.DataTable;
 import cat.nyaa.utils.database.PrimaryKey;
@@ -11,18 +13,26 @@ import java.util.UUID;
 @DataTable("bank_registration")
 public class BankRegistration {
     public UUID bankId;
+    public UUID ownerId;
     @DataColumn("bank_name")
     public String name;
-    public UUID ownerId;
     @DataColumn("registered_capital")
-    public Integer capital;
-    public Instant establishDate;
-    public BankStatus status;
+    public Double registered_capital;
+    @DataColumn("capital")
+    public Double capital; // actual capital left
     @DataColumn("interest_rate_saving")
-    public Double savingInterest;
+    public Double savingInterest; // default saving interest
     @DataColumn("interest_rate_debit")
-    public Double debitInterest;
-    // TODO
+    public Double debitInterest; // default loan interest
+    @DataColumn("interest_rate_saving_next")
+    public Double savingInterestNext; // saving interest for next cycle
+    @DataColumn("interest_rate_debit_next")
+    public Double debitInterestNext; // loan interest for next cycle
+
+    public Instant establishDate; // Stored as human readable string
+    public BankStatus status;
+    public InterestType interestType;
+    public InterestType interestTypeNext;
 
     @DataColumn("bank_id")
     @PrimaryKey
@@ -59,5 +69,23 @@ public class BankRegistration {
 
     public void setStatus(String status) {
         this.status = BankStatus.valueOf(status);
+    }
+
+    @DataColumn("interest_type")
+    public String getInterestType() {
+        return interestType.toString();
+    }
+
+    public void setInterestType(String interestType) {
+        this.interestType = InterestType.valueOf(interestType);
+    }
+
+    @DataColumn("interest_type_next")
+    public String getInterestTypeNext() {
+        return interestTypeNext.toString();
+    }
+
+    public void setInterestTypeNext(String interestTypeNext) {
+        this.interestTypeNext = InterestType.valueOf(interestTypeNext);
     }
 }

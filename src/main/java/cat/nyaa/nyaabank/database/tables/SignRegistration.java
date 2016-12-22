@@ -1,5 +1,6 @@
-package cat.nyaa.nyaabank.database;
+package cat.nyaa.nyaabank.database.tables;
 
+import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.utils.database.DataColumn;
 import cat.nyaa.utils.database.DataTable;
 import cat.nyaa.utils.database.PrimaryKey;
@@ -44,14 +45,14 @@ public class SignRegistration {
 
     public void setWorldName(String worldName) {
         if (location == null) {
-            location = new Location(Bukkit.getWorld(worldName),0,0,0);
+            location = new Location(Bukkit.getWorld(worldName), 0, 0, 0);
         } else {
             location.setWorld(Bukkit.getWorld(worldName));
         }
     }
 
     @DataColumn("location_x")
-    public Integer getCoordinateX () {
+    public Integer getCoordinateX() {
         return location.getBlockX();
     }
 

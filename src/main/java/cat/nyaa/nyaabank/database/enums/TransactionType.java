@@ -1,4 +1,4 @@
-package cat.nyaa.nyaabank.database;
+package cat.nyaa.nyaabank.database.enums;
 
 public enum TransactionType {
     DEPOSIT,

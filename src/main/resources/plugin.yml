@@ -46,3 +46,12 @@ permission:
       nb.info_all: true
       nb.top: true
       nb.reload: true
+
+  nb.tansaction_cmds:
+    description: Allow players to interact with bank from command
+    default: op
+    children:
+      nb.deposite_cmd: true
+      nb.withdraw_cmd: true
+      nb.loan_cmd: true
+      nb.repay_cmd: true

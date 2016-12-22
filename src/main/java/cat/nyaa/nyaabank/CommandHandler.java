@@ -1,7 +1,10 @@
 package cat.nyaa.nyaabank;
 
-import cat.nyaa.nyaabank.database.BankRegistration;
-import cat.nyaa.nyaabank.database.BankStatus;
+import cat.nyaa.nyaabank.database.enums.BankStatus;
+import cat.nyaa.nyaabank.database.enums.InterestType;
+import cat.nyaa.nyaabank.database.enums.TransactionType;
+import cat.nyaa.nyaabank.database.tables.BankRegistration;
+import cat.nyaa.nyaabank.database.tables.PartialRecord;
 import cat.nyaa.utils.CommandReceiver;
 import cat.nyaa.utils.Internationalization;
 import cat.nyaa.utils.database.BaseDatabase;
@@ -14,13 +17,14 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-public class CommandHandler extends CommandReceiver<NyaaBank>{
+public class CommandHandler extends CommandReceiver<NyaaBank> {
     @Override
     public String getHelpPrefix() {
         return "";
     }
 
     private final NyaaBank plugin;
+
     public CommandHandler(NyaaBank plugin, Internationalization i18n) {
         super(plugin, i18n);
         this.plugin = plugin;
@@ -30,9 +34,9 @@ public class CommandHandler extends CommandReceiver<NyaaBank>{
     public void createBank(CommandSender sender, Arguments args) {
         String playerName = args.next();
         String bankName = args.next();
-        int capital = args.nextInt();
+        double capital = args.nextDouble();
 
-        if (playerName == null || bankName == null || capital<0) {
+        if (playerName == null || bankName == null || capital < 0) {
             throw new BadCommandException("manual.reg.usage");
         }
         bankName = ChatColor.translateAlternateColorCodes('&', bankName);
@@ -58,10 +62,15 @@ public class CommandHandler extends CommandReceiver<NyaaBank>{
         reg.name = bankName;
         reg.ownerId = p.getUniqueId();
         reg.capital = capital;
+        reg.registered_capital = capital;
         reg.establishDate = Instant.now();
         reg.status = BankStatus.ACTIVE;
+        reg.interestType = InterestType.COMPOUND;
+        reg.interestTypeNext = reg.interestType;
         reg.savingInterest = 0D;
+        reg.savingInterestNext = reg.savingInterest;
         reg.debitInterest = 0D;
+        reg.debitInterestNext = reg.debitInterest;
         q.insert(reg);
         msg(sender, "command.reg.established", reg.name, reg.bankId.toString());
     }
@@ -85,7 +94,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank>{
                 msg(sender, "command.list.list_empty");
                 return;
             }
-            banks.sort((a,b)->a.ownerId.compareTo(b.ownerId));
+            banks.sort((a, b) -> a.ownerId.compareTo(b.ownerId));
             for (BankRegistration r : banks) {
                 OfflinePlayer p = plugin.getServer().getOfflinePlayer(r.ownerId);
                 msg(sender, "command.list.list_item", r.name, p.getName(), r.bankId.toString());
@@ -102,10 +111,33 @@ public class CommandHandler extends CommandReceiver<NyaaBank>{
                 return;
             }
 
-            banks.sort((a,b)->a.name.compareTo(b.name));
+            banks.sort((a, b) -> a.name.compareTo(b.name));
             for (BankRegistration r : banks) {
                 msg(sender, "command.list.list_item", r.name, p.getName(), r.bankId.toString());
             }
         }
+    }
+
+    @SubCommand(value = "deposit", permission = "nb.deposit_cmd")
+    public void commandDeposit(CommandSender sender, Arguments args) {
+        Player p = asPlayer(sender);
+        Double amount = args.nextDouble();
+        String partialBankId = args.next();
+        if (amount <= 0) throw new BadCommandException("user.deposit.invalid_amount");
+        if (!plugin.eco.has(p, amount)) throw new BadCommandException("user.deposit.not_enough_money");
+        BankRegistration bank = plugin.dbm.getUniqueBank(partialBankId);
+        if (bank == null) throw new BadCommandException("user.deposit.bank_not_found");
+
+        plugin.eco.withdrawPlayer(p, amount);
+        PartialRecord partial = new PartialRecord();
+        partial.transactionId = UUID.randomUUID();
+        partial.bankId = bank.bankId;
+        partial.playerId = p.getUniqueId();
+        partial.capital = amount;
+        partial.type = TransactionType.DEPOSIT;
+        partial.startDate = Instant.now();
+        plugin.dbm.query(PartialRecord.class).insert(partial);
+
+        // TODO log
     }
 }

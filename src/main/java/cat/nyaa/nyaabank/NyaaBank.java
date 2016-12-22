@@ -1,5 +1,6 @@
 package cat.nyaa.nyaabank;
 
+import cat.nyaa.nyaabank.database.CycleManager;
 import cat.nyaa.nyaabank.database.DatabaseManager;
 import cat.nyaa.utils.VaultUtil;
 import net.milkbowl.vault.economy.Economy;
@@ -12,6 +13,7 @@ public class NyaaBank extends JavaPlugin {
     public DatabaseManager dbm;
     public CommandHandler commandHandler;
     public Economy eco;
+    public CycleManager cycle;
 
     @Override
     public void onEnable() {
@@ -22,10 +24,13 @@ public class NyaaBank extends JavaPlugin {
         dbm = new DatabaseManager(this);
         commandHandler = new CommandHandler(this, i18n);
         eco = VaultUtil.getVaultInstance();
+        cycle = new CycleManager(this);
         getCommand("nyaabank").setExecutor(commandHandler);
     }
+
     @Override
     public void onDisable() {
+        getServer().getScheduler().cancelTasks(this);
         getCommand("nyaabank").setExecutor(null);
         cfg.save();
         dbm.close();
