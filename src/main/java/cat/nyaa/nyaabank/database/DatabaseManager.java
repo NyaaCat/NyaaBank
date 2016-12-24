@@ -1,9 +1,11 @@
 package cat.nyaa.nyaabank.database;
 
 import cat.nyaa.nyaabank.NyaaBank;
+import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
+import cat.nyaa.nyaabank.database.tables.TransactionLog;
 import cat.nyaa.utils.database.SQLiteDatabase;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -35,7 +37,8 @@ public class DatabaseManager extends SQLiteDatabase {
                 BankRegistration.class,
                 BankAccount.class,
                 //SignRegistration.class,
-                PartialRecord.class
+                PartialRecord.class,
+                TransactionLog.class
         };
     }
 
@@ -81,6 +84,11 @@ public class DatabaseManager extends SQLiteDatabase {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    /* return a new log entry */
+    public TransactionLog log(TransactionType type) {
+        return new TransactionLog(this, type);
     }
 
     @Override

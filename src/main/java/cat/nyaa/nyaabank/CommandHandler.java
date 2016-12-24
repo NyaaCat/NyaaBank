@@ -3,6 +3,7 @@ package cat.nyaa.nyaabank;
 import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.enums.InterestType;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
+import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
 import cat.nyaa.utils.CommandReceiver;
@@ -14,6 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -137,11 +139,79 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         partial.type = TransactionType.DEPOSIT;
         partial.startDate = Instant.now();
         plugin.dbm.query(PartialRecord.class).insert(partial);
-        // TODO log
+        plugin.dbm.log(TransactionType.DEPOSIT)
+                .from(p.getUniqueId())
+                .to(bank.bankId)
+                .capital(amount)
+                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString())
+                .insert();
     }
 
     @SubCommand(value = "_check", permission = "nb.debug") // TODO: for debug only
     public void forceCheckPoint(CommandSender sender, Arguments args) {
         plugin.cycle.updateDatabaseInterests(System.currentTimeMillis(), plugin.cfg.interestCycle);
+    }
+
+    @SubCommand(value = "_benchmark", permission = "nb.debug") // TODO: for debug only
+    public void checkPointDbBenchmark(CommandSender sender, Arguments args) { // WARN: will destroy database
+        final int NUM_BANK = 100;
+        final int NUM_ACCOUT = 500;
+        sender.sendMessage(String.format("#Bank: %d\n#Account per bank: %d", NUM_BANK, NUM_ACCOUT));
+        sender.sendMessage("Inserting data ...");
+        long startTime = System.currentTimeMillis();
+        plugin.dbm.disableAutoCommit();
+        plugin.dbm.query(BankRegistration.class).delete();
+        plugin.dbm.query(PartialRecord.class).delete();
+        plugin.dbm.query(BankAccount.class).delete();
+        List<BankRegistration> banks = new ArrayList<>();
+
+        BaseDatabase.Query<BankRegistration> q = plugin.dbm.query(BankRegistration.class);
+        for (int i = 0; i < NUM_BANK; i++) {
+            BankRegistration reg = new BankRegistration();
+            reg.bankId = UUID.randomUUID();
+            reg.name = "Test bank " + Integer.toString(i);
+            reg.ownerId = UUID.randomUUID();
+            reg.capital = 10000D;
+            reg.registered_capital = 10000D;
+            reg.establishDate = Instant.now();
+            reg.status = BankStatus.ACTIVE;
+            reg.interestType = InterestType.COMPOUND;
+            reg.interestTypeNext = reg.interestType;
+            reg.savingInterest = 0.1D;
+            reg.savingInterestNext = reg.savingInterest;
+            reg.debitInterest = 0.1D;
+            reg.debitInterestNext = reg.debitInterest;
+            q.insert(reg);
+            banks.add(reg);
+        }
+
+        BaseDatabase.Query<PartialRecord> q2 = plugin.dbm.query(PartialRecord.class);
+        for (BankRegistration b : banks) {
+            for (int i = 0; i < NUM_ACCOUT; i++) {
+                PartialRecord partial = new PartialRecord();
+                partial.transactionId = UUID.randomUUID();
+                partial.bankId = b.bankId;
+                partial.playerId = UUID.randomUUID();
+                partial.capital = 1000D;
+                partial.type = TransactionType.DEPOSIT;
+                partial.startDate = Instant.now();
+                q2.insert(partial);
+            }
+        }
+        plugin.dbm.enableAutoCommit();
+        long endTime = System.currentTimeMillis();
+        sender.sendMessage(String.format("Finished in %.2fs", (endTime - startTime) / 1000D));
+
+        sender.sendMessage("Round #1 ...");
+        startTime = System.currentTimeMillis();
+        plugin.cycle.updateDatabaseInterests(System.currentTimeMillis(), plugin.cfg.interestCycle);
+        endTime = System.currentTimeMillis();
+        sender.sendMessage(String.format("Finished in %.2fs", (endTime - startTime) / 1000D));
+
+        sender.sendMessage("Round #2 ...");
+        startTime = System.currentTimeMillis();
+        plugin.cycle.updateDatabaseInterests(System.currentTimeMillis(), plugin.cfg.interestCycle);
+        endTime = System.currentTimeMillis();
+        sender.sendMessage(String.format("Finished in %.2fs", (endTime - startTime) / 1000D));
     }
 }

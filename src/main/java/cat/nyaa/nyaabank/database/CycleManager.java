@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import static cat.nyaa.nyaabank.database.enums.TransactionType.*;
+
 public class CycleManager {
     private final NyaaBank plugin;
 
@@ -94,7 +96,11 @@ public class CycleManager {
      */
     public void updateDatabaseInterests(long designatedTimestamp, long cycleLength) {
         // TODO maybe we can write this as a big SQL query?
-        // TODO log
+        // TODO run in another thread?
+
+        // Transaction start
+        plugin.dbm.disableAutoCommit();
+
         Map<UUID, Map<UUID, BankAccount>> accountMap = new HashMap<>(); // Map<bankId, Map<playerId, Account>>
         Map<UUID, BankRegistration> bankMap = new HashMap<>(); // Map<bankId, BankReg>
         for (BankAccount a : plugin.dbm.query(BankAccount.class).select()) {
@@ -130,6 +136,7 @@ public class CycleManager {
                     account.deposit += deposit_interest + account.deposit_interest;
                     account.deposit_interest = 0D;
                 }
+                plugin.dbm.log(INTEREST_DEPOSIT).from(bankId).to(playerId).capital(deposit_interest).insert();
 
                 // Loan interest
                 double loan_interest = 0;
@@ -150,7 +157,7 @@ public class CycleManager {
                     account.loan += loan_interest + account.loan_interest;
                     account.loan_interest = 0D;
                 }
-
+                plugin.dbm.log(INTEREST_LOAN).from(playerId).to(bankId).capital(loan_interest).insert();
             }
         }
 
@@ -183,16 +190,26 @@ public class CycleManager {
                     if (deposit_interest >= 0) {
                         account.deposit += partial.capital;
                         account.deposit_interest += deposit_interest;
+                        plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
+                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                        plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital)
+                                .extra("{\"partialId\": \"%s\", \"target\": \"DEPOSIT\"}", partial.transactionId.toString()).insert();
                     } else if (partial.capital + deposit_interest > 0) { // negative interest i.e. money transferred from player to bank
                         account.deposit += partial.capital + deposit_interest;
+                        plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
+                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                        plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital + deposit_interest)
+                                .extra("{\"partialId\": \"%s\", \"target\": \"DEPOSIT\"}", partial.transactionId.toString()).insert();
                     } else { // bank take all the money
                         bank.capital += partial.capital;
                         deposit_interest = 0;
+                        plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(-partial.capital)
+                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
                     }
                     bank.capital -= deposit_interest;
                     break;
                 }
-                case DEBIT: { // Loan interest
+                case LOAN: { // Loan interest
                     double loan_interest = partial.capital * bank.debitInterest;
                     loan_interest *= (designatedTimestamp - partial.startDate.toEpochMilli()) / cycleLength;
                     loan_interest = Math.round(loan_interest * 1000) / 1000;
@@ -200,9 +217,19 @@ public class CycleManager {
                     if (loan_interest >= 0) {
                         account.loan += partial.capital;
                         account.loan_interest += loan_interest;
+                        plugin.dbm.log(INTEREST_LOAN).from(partial.playerId).to(partial.bankId).capital(loan_interest)
+                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                        plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital)
+                                .extra("{\"partialId\": \"%s\", \"target\": \"LOAN\"}", partial.transactionId.toString()).insert();
                     } else if (partial.capital + loan_interest > 0) { // negative interest i.e. money transferred from bank to player
                         account.loan += partial.capital + loan_interest;
+                        plugin.dbm.log(INTEREST_LOAN).from(partial.playerId).to(partial.bankId).capital(loan_interest)
+                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                        plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital + loan_interest)
+                                .extra("{\"partialId\": \"%s\", \"target\": \"LOAN\"}", partial.transactionId.toString()).insert();
                     } else {
+                        plugin.dbm.log(INTEREST_LOAN).from(partial.playerId).to(partial.bankId).capital(-partial.capital)
+                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
                         // give you the money, nothing need to be done.
                     }
                     break;
@@ -226,20 +253,19 @@ public class CycleManager {
         }
 
         // write to database
-        plugin.dbm.disableAutoCommit();
         DatabaseManager.Query<BankRegistration> query1 = plugin.dbm.query(BankRegistration.class);
         for (BankRegistration bank : bankMap.values()) {
             query1.clear().whereEq("bank_id", bank.bankId.toString()).update(bank);
         }
-        plugin.dbm.enableAutoCommit();
-        plugin.dbm.disableAutoCommit();
         DatabaseManager.Query<BankAccount> query2 = plugin.dbm.query(BankAccount.class);
         for (Map<UUID, BankAccount> m : accountMap.values()) {
             for (BankAccount account : m.values()) {
                 query2.clear().whereEq("account_id", account.accountId.toString()).update(account);
             }
         }
-        plugin.dbm.enableAutoCommit();
         plugin.dbm.query(PartialRecord.class).delete();
+
+        // Transaction finish
+        plugin.dbm.enableAutoCommit();
     }
 }
