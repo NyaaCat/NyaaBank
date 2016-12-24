@@ -42,8 +42,7 @@ public class CycleManager {
             long idxC = idxB + 1;
             long nextCheckpoint = idxC * len + offset + 1;
             long delay = nextCheckpoint - now;
-            this.runTaskLater(plugin, delay / 50 + 1);
-
+            new CheckPointTask(delay);
             // TODO update signs for changed interest rate
         }
     }
@@ -93,7 +92,7 @@ public class CycleManager {
      * @param designatedTimestamp unix timestamp ms
      * @param cycleLength         unix timestamp ms
      */
-    private void updateDatabaseInterests(long designatedTimestamp, long cycleLength) {
+    public void updateDatabaseInterests(long designatedTimestamp, long cycleLength) {
         // TODO maybe we can write this as a big SQL query?
         // TODO log
         Map<UUID, Map<UUID, BankAccount>> accountMap = new HashMap<>(); // Map<bankId, Map<playerId, Account>>
@@ -158,7 +157,10 @@ public class CycleManager {
         // compute Partial Records
         for (PartialRecord partial : plugin.dbm.query(PartialRecord.class).select()) {
             BankRegistration bank = bankMap.get(partial.bankId);
-            BankAccount account = accountMap.get(partial.bankId).get(partial.playerId);
+            BankAccount account = null;
+            if (accountMap.containsKey(partial.bankId)) {
+                account = accountMap.get(partial.bankId).get(partial.playerId);
+            }
             boolean newAccount = false;
             if (account == null) {
                 newAccount = true;

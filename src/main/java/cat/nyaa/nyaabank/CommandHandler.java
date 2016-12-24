@@ -137,7 +137,11 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         partial.type = TransactionType.DEPOSIT;
         partial.startDate = Instant.now();
         plugin.dbm.query(PartialRecord.class).insert(partial);
-
         // TODO log
+    }
+
+    @SubCommand(value = "_check", permission = "nb.debug") // TODO: for debug only
+    public void forceCheckPoint(CommandSender sender, Arguments args) {
+        plugin.cycle.updateDatabaseInterests(System.currentTimeMillis(), plugin.cfg.interestCycle);
     }
 }

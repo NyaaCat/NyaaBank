@@ -55,3 +55,7 @@ permission:
       nb.withdraw_cmd: true
       nb.loan_cmd: true
       nb.repay_cmd: true
+
+  nb.debug:
+    description: Access to all dev/debug functions
+    default: op # change to false when releasing
