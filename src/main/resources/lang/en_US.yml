@@ -3,11 +3,38 @@ command:
     name_duplicate: "Bank name already exists"
     established: "Bank `%s&r` established. ID={%s}"
     not_enough_capital: "The player has not that much money"
-  list:
+  bank_list:
     list_player: "=== %s's banks ==="
     list_all: "=== All banks ==="
-    list_item: "%s {Owner: %s, UUID: %s}"
+    list_item: "%s {Owner: %s, bankId: %s}"
     list_empty: "No registered bank"
+  bank_info:
+    no_such_bank: "Bank not found or not unique"
+    only_self: "It's none of your business"
+    info: |
+      Bank Name: %s
+      Bank Id: %s
+      Owner Name: %s
+      Owner Id: %s
+      Established Date: %s
+      Status: %s
+      Registered Capital: %.2f
+      Current Capital: %.2f
+      Deposit Interest Rate: %f
+      Loan Interest Rate: %f
+      Interest Type: %s
+      Next Deposit Interest Rate: %f
+      Next Loan Interest Rate: %f
+      Next Interest Type: %s
+  bank_interest:
+    no_such_bank: "Bank not found or not unique"
+    only_self: "It's none of your business"
+    rate_out_of_range: "Interest Rate out of range: [%.2f, %.2f]"
+  bank_customers:
+    no_such_bank: "Bank not found or not unique"
+    only_self: "It's none of your business"
+    customer_record: "%s: Deposit=%.2f, Loan=%.2f"
+    no_customer: "No customer to be listed"
 
 user:
   deposit:
@@ -23,13 +50,29 @@ manual:
     description: "Show help message"
     usage: "/nb [subCommands...] help"
 
+  bank:
+    description: "Manage your banks"
+    usage: "/nb bank [subCommand] [args...]"
+
+    list:
+      description: "List the banks"
+      usage: "/nb bank list [playerName]"
+
+    info:
+      desctiption: "Show the info about one bank"
+      usage: "/nb bank info <bank-id>"
+
+    interest:
+      description: "Change interest rate."
+      usage: "/nb bank interest <bank-id> [SAVING|LOAN|TYPE] <float-hundred-percent|SIMPLE|COMPOUND>"
+
+    customers:
+      description: "List all customers"
+      usage: "/nb bank customers <bank-id>"
+
   reg:
     description: "Register a bank"
     usage: "/nb reg <playerName> <bankName> <bankCapital>"
-
-  list:
-    description: "List the banks"
-    usage: "/nb list [playerName]"
 
   deposit:
     description: "Make deposit to some bank"

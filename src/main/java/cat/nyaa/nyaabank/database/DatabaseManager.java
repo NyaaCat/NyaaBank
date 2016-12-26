@@ -50,7 +50,7 @@ public class DatabaseManager extends SQLiteDatabase {
      * @return unique bank
      */
     public BankRegistration getUniqueBank(String partialUUID) {
-        if (partialUUID == null) return null;
+        if (partialUUID == null || "".equals(partialUUID)) return null;
         List<BankRegistration> r = query(BankRegistration.class)
                 .where("bank_id", " LIKE ", "%" + partialUUID + "%")
                 .select();

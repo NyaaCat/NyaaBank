@@ -27,6 +27,9 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
 
     private final NyaaBank plugin;
 
+    @SubCommand("bank")
+    BankManagementCommands bankCommand;
+
     public CommandHandler(NyaaBank plugin, Internationalization i18n) {
         super(plugin, i18n);
         this.plugin = plugin;
@@ -75,49 +78,6 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         reg.debitInterestNext = reg.debitInterest;
         q.insert(reg);
         msg(sender, "command.reg.established", reg.name, reg.bankId.toString());
-    }
-
-    @SubCommand(value = "list", permission = "nb.list_self")
-    public void listBanks(CommandSender sender, Arguments args) {
-        if (sender.hasPermission("nb.list_all")) {
-            String playerName = args.next();
-            List<BankRegistration> banks;
-            if (playerName == null) {
-                banks = plugin.dbm.query(BankRegistration.class).select();
-                msg(sender, "command.list.list_all");
-            } else {
-                UUID id = plugin.getServer().getOfflinePlayer(playerName).getUniqueId();
-                banks = plugin.dbm.query(BankRegistration.class)
-                        .whereEq("owner_id", id.toString())
-                        .select();
-                msg(sender, "command.list.list_player", playerName);
-            }
-            if (banks.size() <= 0) {
-                msg(sender, "command.list.list_empty");
-                return;
-            }
-            banks.sort((a, b) -> a.ownerId.compareTo(b.ownerId));
-            for (BankRegistration r : banks) {
-                OfflinePlayer p = plugin.getServer().getOfflinePlayer(r.ownerId);
-                msg(sender, "command.list.list_item", r.name, p.getName(), r.bankId.toString());
-            }
-        } else {
-            Player p = asPlayer(sender);
-            List<BankRegistration> banks = plugin.dbm.query(BankRegistration.class)
-                    .whereEq("owner_id", p.getUniqueId().toString())
-                    .select();
-
-            msg(sender, "command.list.list_player", p.getName());
-            if (banks.size() <= 0) {
-                msg(sender, "command.list.list_empty");
-                return;
-            }
-
-            banks.sort((a, b) -> a.name.compareTo(b.name));
-            for (BankRegistration r : banks) {
-                msg(sender, "command.list.list_item", r.name, p.getName(), r.bankId.toString());
-            }
-        }
     }
 
     @SubCommand(value = "deposit", permission = "nb.deposit_cmd")

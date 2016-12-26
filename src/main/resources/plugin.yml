@@ -25,25 +25,31 @@ permission:
     description: Default permissions for normal player
     default: true
     children:
-      nb.list_self: true
-      nb.info_self: true
       nb.deposit: true
       nb.withdraw: true
       nb.loan: true
       nb.repay: true
 
-  nb.banker: # this permission node currently unused
+  nb.banker:
     description: Default permissions for bankers
-    default: false
+    default: true
+    children:
+      nb.bank_list: true
+      nb.bank_info: true
+      nb.bank_interest: true
+      nb.bank_customers: true
 
   nb.admin:
     description: Permissions for the god
     default: op
     children:
+      nb.bank_list_admin: true
+      nb.bank_info_admin: true
+      nb.bank_interest_admin: true
+      nb.bank_customers_admin: true
+
       nb.create_bank: true
       nb.force_bankrupt: true
-      nb.list_all: true
-      nb.info_all: true
       nb.top: true
       nb.reload: true
 
