@@ -59,14 +59,50 @@ public class DatabaseManager extends SQLiteDatabase {
     }
 
     /**
-     * get unique bank account for one player in one bank.
-     *
-     * @param bankId
-     * @param playerId
-     * @return
+     * Get player's bank account
+     * return null if not found
      */
-    public BankAccount getBankAccount(UUID bankId, UUID playerId) {
-        return null; // todo
+    public BankAccount getAccount(UUID bankId, UUID playerId) {
+        BankAccount account = null;
+        List<BankAccount> l = query(BankAccount.class)
+                .whereEq("bank_id", bankId.toString())
+                .whereEq("player_id", playerId.toString())
+                .select();
+        if (l.size() > 0) {
+            if (l.size() > 1) {
+                plugin.getLogger().severe("Duplicated account: bankid:" +
+                        bankId.toString() + " playerid:" + playerId.toString());
+            }
+            account = l.get(0);
+        }
+        return account;
+    }
+
+    public List<PartialRecord> getPartialRecords(UUID bankId, UUID playerId, TransactionType type) {
+        return query(PartialRecord.class)
+                .whereEq("bank_id", bankId.toString())
+                .whereEq("player_id", playerId.toString())
+                .whereEq("transaction_type", type.name())
+                .select();
+    }
+
+    /**
+     * Get total deposit: deposit+interest+partial
+     *
+     * @param bankId bank id
+     * @param playerId player id
+     * @return total deposit
+     */
+    public double getTotalDeposit(UUID bankId, UUID playerId) {
+        double ret = 0;
+        BankAccount account = getAccount(bankId, playerId);
+        if (account != null) {
+            ret += account.deposit + account.deposit_interest;
+        }
+        for (PartialRecord rec : getPartialRecords(bankId, playerId, TransactionType.DEPOSIT)) {
+            ret += rec.capital;
+        }
+        return ret;
     }
 
     public void disableAutoCommit() {

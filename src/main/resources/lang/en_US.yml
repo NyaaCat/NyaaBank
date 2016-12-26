@@ -41,6 +41,11 @@ user:
     invalid_amount: "Invalid amount"
     not_enough_money: "Not enough money"
     bank_not_found: "Bank not found or not unique"
+  withdraw:
+    invalid_amount: "Invalid amount"
+    bank_not_found: "Bank not found or not unique"
+    not_enough_deposit: "You do not have that much deposit"
+
 
 manual:
   no_description: "No description"
@@ -77,3 +82,7 @@ manual:
   deposit:
     description: "Make deposit to some bank"
     usage: "/nb deposit <amount> <bank-id>"
+
+  withdraw:
+    description: "Withdraw money from bank"
+    usage: "/nb withdraw <amount|ALL> <bank-id>"

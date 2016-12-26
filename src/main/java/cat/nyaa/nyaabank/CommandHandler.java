@@ -105,6 +105,92 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                 .capital(amount)
                 .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString())
                 .insert();
+
+        bank.capital += amount;
+        plugin.dbm.query(BankRegistration.class)
+                .whereEq("bank_id", bank.bankId)
+                .update(bank, "capital");
+    }
+
+    @SubCommand(value = "withdraw", permission = "nb.withdraw_cmd")
+    public void commandWithdraw(CommandSender sender, Arguments args) {
+        Player p = asPlayer(sender);
+        String amountS = args.top();
+        if (amountS == null) throw new BadCommandException();
+        double amount;
+        boolean withdrawAll;
+        if ("ALL".equals(amountS.toUpperCase())) {
+            withdrawAll = true;
+            amount = -1;
+        } else {
+            withdrawAll = false;
+            amount = args.nextDouble();
+        }
+        String bankIdP = args.next();
+        if (bankIdP == null) throw new BadCommandException();
+        BankRegistration bank = plugin.dbm.getUniqueBank(bankIdP);
+        if (bank == null) throw new BadCommandException("user.deposit.bank_not_found");
+
+        double totalDeposit = plugin.dbm.getTotalDeposit(bank.bankId, p.getUniqueId());
+        if (withdrawAll) {
+            BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
+            account.deposit = 0D;
+            account.deposit_interest = 0D;
+            plugin.dbm.query(BankAccount.class)
+                    .whereEq("account_id", account.accountId)
+                    .update(account, "deposit", "deposit_interest");
+            plugin.dbm.query(PartialRecord.class)
+                    .whereEq("bank_id", bank.bankId.toString())
+                    .whereEq("player_id", p.getUniqueId())
+                    .whereEq("transaction_type", TransactionType.DEPOSIT.name())
+                    .delete();
+            plugin.dbm.log(TransactionType.WITHDRAW).from(bank.bankId).to(p.getUniqueId())
+                    .capital(totalDeposit).insert();
+            plugin.eco.depositPlayer(p, totalDeposit);
+        } else {
+            if (amount <= 0) throw new BadCommandException("user.withdraw.invalid_amount");
+            if (amount > totalDeposit) throw new BadCommandException("user.withdraw.not_enough_deposit");
+            double realAmount = 0;
+            List<PartialRecord> l = plugin.dbm.getPartialRecords(bank.bankId, p.getUniqueId(), TransactionType.DEPOSIT);
+            l.sort((a, b) -> a.capital.equals(b.capital) ? 0 : (a.capital < b.capital ? -1 : 1));
+            int idx = 0;
+            while (amount > 0 && idx < l.size()) {
+                PartialRecord r = l.get(idx);
+                if (amount > r.capital) {
+                    amount -= r.capital;
+                    realAmount += r.capital;
+                    plugin.dbm.query(PartialRecord.class).whereEq("transaction_id", r.transactionId.toString()).delete();
+                } else {
+                    realAmount += amount;
+                    r.capital -= amount;
+                    amount = -1;
+                    plugin.dbm.query(PartialRecord.class).whereEq("transaction_id", r.transactionId.toString())
+                            .update(r, "capital");
+                }
+            }
+            if (amount > 0) {
+                BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
+                if (amount > account.deposit + account.deposit_interest) {
+                    realAmount += account.deposit + account.deposit_interest;
+                    account.deposit = 0D;
+                    account.deposit_interest = 0D;
+                } else if (amount > account.deposit_interest) {
+                    account.deposit -= amount - account.deposit_interest;
+                    account.deposit_interest = 0D;
+                    realAmount += amount;
+                    amount = 0D;
+                } else {
+                    account.deposit_interest -= amount;
+                    realAmount += amount;
+                    amount = 0D;
+                }
+                plugin.dbm.query(BankAccount.class).whereEq("account_id", account.getAccountId())
+                        .update(account, "deposit", "deposit_interest");
+            }
+            plugin.dbm.log(TransactionType.WITHDRAW).from(bank.bankId).to(p.getUniqueId())
+                    .capital(realAmount).insert();
+            plugin.eco.depositPlayer(p, realAmount);
+        }
     }
 
     @SubCommand(value = "_check", permission = "nb.debug") // TODO: for debug only
