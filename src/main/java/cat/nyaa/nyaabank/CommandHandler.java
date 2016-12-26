@@ -160,6 +160,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                     amount -= r.capital;
                     realAmount += r.capital;
                     plugin.dbm.query(PartialRecord.class).whereEq("transaction_id", r.transactionId.toString()).delete();
+                    idx++;
                 } else {
                     realAmount += amount;
                     r.capital -= amount;
