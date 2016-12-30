@@ -16,6 +16,7 @@ import org.bukkit.entity.Player;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,6 +79,16 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         reg.debitInterestNext = reg.debitInterest;
         q.insert(reg);
         msg(sender, "command.reg.established", reg.name, reg.bankId.toString());
+    }
+
+    @SubCommand(value = "top", permission = "nb.top")
+    public void topBanks(CommandSender sender, Arguments args) {
+        List<BankRegistration> l = plugin.dbm.query(BankRegistration.class).select();
+        l.sort((a,b)->a.capital.compareTo(b.capital));
+        for (int i = l.size();i>=1;i--) {
+            BankRegistration b = l.get(i-1);
+            msg(sender, "command.top.list_item", i, b.name, b.capital, b.getBankId());
+        }
     }
 
     @SubCommand(value = "deposit", permission = "nb.deposit_cmd")

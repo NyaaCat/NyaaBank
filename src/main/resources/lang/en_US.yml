@@ -3,6 +3,8 @@ command:
     name_duplicate: "Bank name already exists"
     established: "Bank `%s&r` established. ID={%s}"
     not_enough_capital: "The player has not that much money"
+  top:
+    list_item: "%3d. %s&r(%.2f) {%s}"
   bank_list:
     list_player: "=== %s's banks ==="
     list_all: "=== All banks ==="
@@ -87,6 +89,10 @@ manual:
   reg:
     description: "Register a bank"
     usage: "/nb reg <playerName> <bankName> <bankCapital>"
+
+  top:
+    description: "List banks by capital"
+    usage: "/nb top"
 
   deposit:
     description: "Make deposit to some bank"
