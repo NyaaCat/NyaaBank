@@ -53,6 +53,11 @@ user:
     bank_not_found: "Bank not found or not unique"
     not_enough_deposit: "You do not have that much deposit"
     bank_run: "This bank do not have that much money"
+  loan:
+    invalid_amount: "Invalid amount"
+    bank_not_found: "Bank not found or not unique"
+    has_loan: "You haven't cleared your previous loan"
+    not_enough_money_bank: "This bank does not have that much money"
 
 manual:
   no_description: "No description"
@@ -101,3 +106,7 @@ manual:
   withdraw:
     description: "Withdraw money from bank"
     usage: "/nb withdraw <amount|ALL> <bank-id>"
+
+  loan:
+    description: "Loan money from bank"
+    usage: "/nb loan <amount> <bank-id>"

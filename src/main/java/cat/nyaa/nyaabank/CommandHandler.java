@@ -213,6 +213,46 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         }
     }
 
+    @SubCommand(value = "loan", permission = "nb.loan_cmd")
+    public void commandLoan(CommandSender sender, Arguments args) {
+        Player p = asPlayer(sender);
+        double amount = args.nextDouble();
+        String partialId = args.next();
+        if (amount <= 0) throw new BadCommandException("user.loan.invalid_amount");
+        if (partialId == null) throw new BadCommandException();
+        BankRegistration bank = plugin.dbm.getUniqueBank(partialId);
+        if (bank == null) throw new BadCommandException("user.loan.bank_not_found");
+        if (bank.capital <= amount) throw new BadCommandException("user.loan.not_enough_money_bank");
+        BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
+        if (account != null && (account.loan > 0 || account.loan_interest > 0)) {
+            throw new BadCommandException("user.loan.has_loan");
+        }
+        if (plugin.dbm.query(PartialRecord.class)
+                .whereEq("player_id", p.getUniqueId().toString())
+                .whereEq("bank_id", bank.getBankId())
+                .whereEq("transaction_type", TransactionType.LOAN.name())
+                .count() > 0) {
+            throw new BadCommandException("user.loan.has_loan");
+        }
+        PartialRecord partial = new PartialRecord();
+        partial.transactionId = UUID.randomUUID();
+        partial.bankId = bank.bankId;
+        partial.playerId = p.getUniqueId();
+        partial.capital = amount;
+        partial.type = TransactionType.LOAN;
+        partial.startDate = Instant.now();
+        plugin.dbm.query(PartialRecord.class).insert(partial);
+        bank.capital -= amount;
+        plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.getBankId()).update(bank, "capital");
+        plugin.eco.depositPlayer(p, amount);
+        plugin.dbm.log(TransactionType.LOAN)
+                .to(p.getUniqueId())
+                .from(bank.bankId)
+                .capital(amount)
+                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString())
+                .insert();
+    }
+
     @SubCommand(value = "_check", permission = "nb.debug") // TODO: for debug only
     public void forceCheckPoint(CommandSender sender, Arguments args) {
         plugin.cycle.updateDatabaseInterests(System.currentTimeMillis(), plugin.cfg.interestCycle);
