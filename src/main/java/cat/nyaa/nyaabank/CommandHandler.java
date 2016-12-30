@@ -129,10 +129,11 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         String bankIdP = args.next();
         if (bankIdP == null) throw new BadCommandException();
         BankRegistration bank = plugin.dbm.getUniqueBank(bankIdP);
-        if (bank == null) throw new BadCommandException("user.deposit.bank_not_found");
+        if (bank == null) throw new BadCommandException("user.withdraw.bank_not_found");
 
         double totalDeposit = plugin.dbm.getTotalDeposit(bank.bankId, p.getUniqueId());
         if (withdrawAll) {
+            if (totalDeposit >= bank.capital) throw new BadCommandException("user.withdraw.bank_run");
             BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
             account.deposit = 0D;
             account.deposit_interest = 0D;
@@ -144,12 +145,16 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                     .whereEq("player_id", p.getUniqueId())
                     .whereEq("transaction_type", TransactionType.DEPOSIT.name())
                     .delete();
+            bank.capital -= totalDeposit;
+            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.bankId.toString())
+                    .update(bank, "capital");
             plugin.dbm.log(TransactionType.WITHDRAW).from(bank.bankId).to(p.getUniqueId())
                     .capital(totalDeposit).insert();
             plugin.eco.depositPlayer(p, totalDeposit);
         } else {
             if (amount <= 0) throw new BadCommandException("user.withdraw.invalid_amount");
             if (amount > totalDeposit) throw new BadCommandException("user.withdraw.not_enough_deposit");
+            if (amount >= bank.capital) throw new BadCommandException("user.withdraw.bank_run");
             double realAmount = 0;
             List<PartialRecord> l = plugin.dbm.getPartialRecords(bank.bankId, p.getUniqueId(), TransactionType.DEPOSIT);
             l.sort((a, b) -> a.capital.equals(b.capital) ? 0 : (a.capital < b.capital ? -1 : 1));
@@ -188,6 +193,9 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                 plugin.dbm.query(BankAccount.class).whereEq("account_id", account.getAccountId())
                         .update(account, "deposit", "deposit_interest");
             }
+            bank.capital -= realAmount;
+            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.bankId.toString())
+                    .update(bank, "capital");
             plugin.dbm.log(TransactionType.WITHDRAW).from(bank.bankId).to(p.getUniqueId())
                     .capital(realAmount).insert();
             plugin.eco.depositPlayer(p, realAmount);

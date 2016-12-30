@@ -45,7 +45,7 @@ user:
     invalid_amount: "Invalid amount"
     bank_not_found: "Bank not found or not unique"
     not_enough_deposit: "You do not have that much deposit"
-
+    bank_run: "This bank do not have that much money"
 
 manual:
   no_description: "No description"
