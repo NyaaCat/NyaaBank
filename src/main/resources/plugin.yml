@@ -38,6 +38,7 @@ permission:
       nb.bank_info: true
       nb.bank_interest: true
       nb.bank_customers: true
+      nb.bank_vault: true
 
   nb.admin:
     description: Permissions for the god
@@ -47,6 +48,7 @@ permission:
       nb.bank_info_admin: true
       nb.bank_interest_admin: true
       nb.bank_customers_admin: true
+      nb.bank_vault_admin: true
 
       nb.create_bank: true
       nb.force_bankrupt: true

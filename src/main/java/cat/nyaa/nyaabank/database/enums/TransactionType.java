@@ -8,5 +8,6 @@ public enum TransactionType {
     INTEREST_DEPOSIT, // from BANK to PLAYER
     INTEREST_LOAN,    // from PLAYER to BANK
     PARTIAL_MOVE,     // from PLAYER to BANK, PARTIAL_ID in EXTRA
+    VAULT_CHANGE,     // from PLAYER to BANK
     QUERY;   // from PLAYER to {random stuff}, detail in EXTRA
 }

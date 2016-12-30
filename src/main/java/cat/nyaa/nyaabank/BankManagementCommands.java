@@ -34,6 +34,30 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         return "bank";
     }
 
+    /**
+     * Get unique bank considering sender's permission
+     * If sender is not player, ownership check is skipped
+     * @param sender who invoked the command
+     * @param partialId partial bank id
+     * @param noBankLang language key to be print when no bank is found
+     * @param adminPermission permission required to skip the ownership check
+     * @param permissionLang language key for wrong ownership
+     * @return the bank
+     */
+    private BankRegistration getBankWithPermission(CommandSender sender, String partialId, String noBankLang,
+                                                   String adminPermission, String permissionLang) {
+        BankRegistration bank = plugin.dbm.getUniqueBank(partialId);
+        if (bank == null) throw new BadCommandException(noBankLang);
+        if (sender instanceof Player) {
+            if (!((Player) sender).getUniqueId().equals(bank.ownerId)) {
+                if (!sender.hasPermission(adminPermission)) {
+                    throw new BadCommandException(permissionLang);
+                }
+            }
+        }
+        return bank;
+    }
+
     @SubCommand(value = "list", permission = "nb.bank_list")
     public void listBanks(CommandSender sender, Arguments args) {
         if (sender.hasPermission("nb.bank_list_admin")) {  // OPs
@@ -80,16 +104,10 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
     @SubCommand(value = "info", permission = "nb.bank_info")
     public void bankInfo(CommandSender sender, Arguments args) {
         if (args.top() == null) throw new BadCommandException();
-        BankRegistration bank = plugin.dbm.getUniqueBank(args.next());
-        if (bank == null) throw new BadCommandException("nb.bank_info.no_such_bank");
-
-        if (sender instanceof Player) {
-            if (!((Player) sender).getUniqueId().equals(bank.ownerId)) {
-                if (!sender.hasPermission("nb.bank_info_admin")) {
-                    throw new BadCommandException("nb.bank_info.only_self");
-                }
-            }
-        }
+        BankRegistration bank = getBankWithPermission(sender, args.next(),
+                "nb.bank_info.no_such_bank",
+                "nb.bank_info_admin",
+                "nb.bank_info.only_self");
 
         String ownerName = "UNKNOWN";
         if (Bukkit.getPlayer(bank.ownerId) != null) {
@@ -117,18 +135,11 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
     @SubCommand(value = "interest", permission = "nb.bank_interest")
     public void changeInterestInfo(CommandSender sender, Arguments args) {
         String bankId = args.next();
-        String op = args.next();
+        String op = args.next();  // OPERATION: SAVING/LOAN/TYPE
         if (bankId == null || op == null) throw new BadCommandException();
 
-        BankRegistration bank = plugin.dbm.getUniqueBank(bankId);
-        if (bank == null) throw new BadCommandException("nb.bank_interest.no_such_bank");
-        if (sender instanceof Player) {
-            if (!((Player) sender).getUniqueId().equals(bank.ownerId)) {
-                if (!sender.hasPermission("nb.bank_interest_admin")) {
-                    throw new BadCommandException("nb.bank_interest.only_self");
-                }
-            }
-        }
+        BankRegistration bank = getBankWithPermission(sender, bankId, "nb.bank_interest.no_such_bank",
+                "nb.bank_interest_admin", "nb.bank_interest.only_self");
 
         op = op.toUpperCase();
         switch (op) {
@@ -182,15 +193,8 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         String bankId = args.next();
         if (bankId == null || "".equals(bankId)) throw new BadCommandException();
 
-        BankRegistration bank = plugin.dbm.getUniqueBank(bankId);
-        if (bank == null) throw new BadCommandException("nb.bank_customers.no_such_bank");
-        if (sender instanceof Player) {
-            if (!((Player) sender).getUniqueId().equals(bank.ownerId)) {
-                if (!sender.hasPermission("nb.bank_customers_admin")) {
-                    throw new BadCommandException("nb.bank_customers.only_self");
-                }
-            }
-        }
+        BankRegistration bank = getBankWithPermission(sender, bankId, "nb.bank_customers.no_such_bank",
+                "nb.bank_customers_admin", "nb.bank_customers.only_self");
 
         Map<UUID, BankAccount> accounts = new HashMap<>();
         Multimap<UUID, PartialRecord> partials = HashMultimap.create();
@@ -228,6 +232,30 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         }
         if (ids.size() <= 0) {
             msg(sender, "command.bank_customers.no_customer");
+        }
+    }
+
+    @SubCommand(value = "vault", permission = "nb.bank_vault")
+    public void depositVault(CommandSender sender, Arguments args) {
+        Player p = asPlayer(sender);
+        double capital = args.nextDouble();
+        String partialId = args.next();
+        if (partialId == null) throw new BadCommandException();
+        BankRegistration bank = getBankWithPermission(sender, partialId, "command.bank_vault.no_such_bank",
+                "nb.bank_vault_admin", "nb.bank_vault.only_self");
+        if (capital > 0) {  // move from player to bank vault
+            if (!plugin.eco.has(p, capital)) throw new BadCommandException("command.bank_vault.player_insufficient");
+            bank.capital += capital;
+            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.getBankId()).update(bank, "capital");
+            plugin.dbm.log(TransactionType.VAULT_CHANGE).from(p.getUniqueId()).to(bank.bankId).capital(capital).insert();
+            plugin.eco.withdrawPlayer(p, capital);
+        } else if (capital < 0) { // move from vault to player account
+            capital = -capital;
+            if (capital > bank.capital) throw new BadCommandException("command.bank_vault.vault_insufficient");
+            bank.capital -= capital;
+            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.getBankId()).update(bank, "capital");
+            plugin.dbm.log(TransactionType.VAULT_CHANGE).from(p.getUniqueId()).to(bank.bankId).capital(-capital).insert();
+            plugin.eco.depositPlayer(p, capital);
         }
     }
 }

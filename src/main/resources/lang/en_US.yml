@@ -35,6 +35,11 @@ command:
     only_self: "It's none of your business"
     customer_record: "%s: Deposit=%.2f, Loan=%.2f"
     no_customer: "No customer to be listed"
+  bank_vault:
+    no_such_bank: "Bank not found or not unique"
+    only_self: "It's none of your business"
+    vault_insufficient: "Bank vault do not have that much money"
+    player_insufficient: "You do not have that much money"
 
 user:
   deposit:
@@ -74,6 +79,10 @@ manual:
     customers:
       description: "List all customers"
       usage: "/nb bank customers <bank-id>"
+
+    vault:
+      description: "Deposit some money into bank vault"
+      usage: "/nb bank vault <amount> <bank-id>"
 
   reg:
     description: "Register a bank"
