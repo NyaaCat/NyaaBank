@@ -105,6 +105,25 @@ public class DatabaseManager extends SQLiteDatabase {
         return ret;
     }
 
+    /**
+     * Get total loan: loan+interest+partial
+     *
+     * @param bankId bank id
+     * @param playerId player id
+     * @return total loan
+     */
+    public double getTotalLoan(UUID bankId, UUID playerId) {
+        double ret = 0;
+        BankAccount account = getAccount(bankId, playerId);
+        if (account != null) {
+            ret += account.loan + account.loan_interest;
+        }
+        for (PartialRecord rec : getPartialRecords(bankId, playerId, TransactionType.LOAN)) {
+            ret += rec.capital;
+        }
+        return ret;
+    }
+
     public void disableAutoCommit() {
         try {
             getConnection().setAutoCommit(false);

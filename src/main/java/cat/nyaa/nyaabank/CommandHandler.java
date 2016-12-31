@@ -398,6 +398,96 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                 .insert();
     }
 
+    @SubCommand(value = "repay", permission = "nb.repay_cmd")
+    public void commandRepay(CommandSender sender, Arguments args) {
+        Player p = asPlayer(sender);
+        String amountS = args.top();
+        if (amountS == null) throw new BadCommandException();
+        double amount;
+        boolean repayAll;
+        if ("ALL".equals(amountS.toUpperCase())) {
+            repayAll = true;
+            amount = -1;
+        } else {
+            repayAll = false;
+            amount = args.nextDouble();
+        }
+        String bankIdP = args.next();
+        if (bankIdP == null) throw new BadCommandException();
+        BankRegistration bank = plugin.dbm.getUniqueBank(bankIdP);
+        if (bank == null) throw new BadCommandException("user.repay.bank_not_found");
+
+        double totalLoan = plugin.dbm.getTotalLoan(bank.bankId, p.getUniqueId());
+        if (repayAll) {
+            if (!plugin.eco.has(p, totalLoan)) throw new BadCommandException("user.repay.not_enough_money");
+            BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
+            account.loan = 0D;
+            account.loan_interest = 0D;
+            plugin.dbm.query(BankAccount.class)
+                    .whereEq("account_id", account.accountId)
+                    .update(account, "loan", "loan_interest");
+            plugin.dbm.query(PartialRecord.class)
+                    .whereEq("bank_id", bank.bankId.toString())
+                    .whereEq("player_id", p.getUniqueId())
+                    .whereEq("transaction_type", TransactionType.LOAN.name())
+                    .delete();
+            bank.capital += totalLoan;
+            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.bankId.toString())
+                    .update(bank, "capital");
+            plugin.dbm.log(TransactionType.REPAY).to(bank.bankId).from(p.getUniqueId())
+                    .capital(totalLoan).insert();
+            plugin.eco.withdrawPlayer(p, totalLoan);
+        } else {
+            if (amount <= 0) throw new BadCommandException("user.repay.invalid_amount");
+            if (amount > totalLoan) throw new BadCommandException("user.repay.no_need_to_pay");
+            if (!plugin.eco.has(p, amount)) throw new BadCommandException("user.repay.not_enough_money");
+            double realAmount = 0;
+            List<PartialRecord> l = plugin.dbm.getPartialRecords(bank.bankId, p.getUniqueId(), TransactionType.LOAN);
+            l.sort((a, b) -> a.capital.compareTo(b.capital));
+            int idx = 0;
+            while (amount > 0 && idx < l.size()) {
+                PartialRecord r = l.get(idx);
+                if (amount > r.capital) {
+                    amount -= r.capital;
+                    realAmount += r.capital;
+                    plugin.dbm.query(PartialRecord.class).whereEq("transaction_id", r.transactionId.toString()).delete();
+                    idx++;
+                } else {
+                    realAmount += amount;
+                    r.capital -= amount;
+                    amount = -1;
+                    plugin.dbm.query(PartialRecord.class).whereEq("transaction_id", r.transactionId.toString())
+                            .update(r, "capital");
+                }
+            }
+            if (amount > 0) {
+                BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
+                if (amount > account.loan + account.loan_interest) {
+                    realAmount += account.loan + account.loan_interest;
+                    account.loan = 0D;
+                    account.loan_interest = 0D;
+                } else if (amount > account.loan_interest) {
+                    account.loan -= amount - account.loan_interest;
+                    account.loan_interest = 0D;
+                    realAmount += amount;
+                    amount = 0D;
+                } else {
+                    account.loan_interest -= amount;
+                    realAmount += amount;
+                    amount = 0D;
+                }
+                plugin.dbm.query(BankAccount.class).whereEq("account_id", account.getAccountId())
+                        .update(account, "loan", "loan_interest");
+            }
+            bank.capital += realAmount;
+            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.bankId.toString())
+                    .update(bank, "capital");
+            plugin.dbm.log(TransactionType.REPAY).to(bank.bankId).from(p.getUniqueId())
+                    .capital(realAmount).insert();
+            plugin.eco.withdrawPlayer(p, realAmount);
+        }
+    }
+
     @SubCommand(value = "_check", permission = "nb.debug") // TODO: for debug only
     public void forceCheckPoint(CommandSender sender, Arguments args) {
         plugin.cycle.updateDatabaseInterests(System.currentTimeMillis(), plugin.cfg.interestCycle);

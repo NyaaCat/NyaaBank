@@ -65,6 +65,11 @@ user:
     bank_not_found: "Bank not found or not unique"
     has_loan: "You haven't cleared your previous loan"
     not_enough_money_bank: "This bank does not have that much money"
+  repay:
+    invalid_amount: "Invalid amount"
+    bank_not_found: "Bank not found or not unique"
+    no_need_to_pay: "You do not need to pay that much money"
+    not_enough_money: "You do not have that much money"
 
 manual:
   no_description: "No description"
@@ -125,3 +130,7 @@ manual:
   loan:
     description: "Loan money from bank"
     usage: "/nb loan <amount> <bank-id>"
+
+  repay:
+    description: "Repay the loan"
+    usage: "/nb repay <amount|ALL> <bank-id>"
