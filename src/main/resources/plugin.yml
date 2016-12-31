@@ -15,8 +15,6 @@ commands:
     permission-message: "You do not have the required permission: <permission>"
     usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
 
-
-
 permission:
   nb.command:
     description: Run bank command
@@ -29,6 +27,7 @@ permission:
       nb.withdraw: true
       nb.loan: true
       nb.repay: true
+      nb.list_my: true
 
   nb.banker:
     description: Default permissions for bankers
@@ -49,6 +48,8 @@ permission:
       nb.bank_interest_admin: true
       nb.bank_customers_admin: true
       nb.bank_vault_admin: true
+
+      nb.list_my_admin: true
 
       nb.create_bank: true
       nb.force_bankrupt: true

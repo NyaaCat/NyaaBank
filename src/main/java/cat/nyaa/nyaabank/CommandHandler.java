@@ -15,10 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class CommandHandler extends CommandReceiver<NyaaBank> {
     @Override
@@ -88,6 +85,45 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         for (int i = l.size();i>=1;i--) {
             BankRegistration b = l.get(i-1);
             msg(sender, "command.top.list_item", i, b.name, b.capital, b.getBankId());
+        }
+    }
+
+    @SubCommand(value = "my", permission = "nb.list_my")
+    public void listMyAccounts(CommandSender sender, Arguments args) {
+        UUID pid = null;
+        if (sender.hasPermission("nb.list_my_admin") && args.top() != null) {
+            pid = plugin.getServer().getOfflinePlayer(args.next()).getUniqueId();
+        }
+        if (pid == null) pid = asPlayer(sender).getUniqueId();
+        List<BankAccount> accounts = plugin.dbm.query(BankAccount.class)
+                .whereEq("player_id", pid.toString()).select();
+        List<PartialRecord> partials = plugin.dbm.query(PartialRecord.class)
+                .whereEq("player_id", pid.toString()).select();
+
+        Map<UUID, Double> deposit = new HashMap<>();
+        Map<UUID, Double> loan = new HashMap<>();
+        for (BankAccount b : accounts) {
+            deposit.put(b.bankId, deposit.getOrDefault(b.bankId, 0D) + b.deposit + b.deposit_interest);
+            loan.put(b.bankId, loan.getOrDefault(b.bankId, 0D) + b.loan + b.loan_interest);
+        }
+        for (PartialRecord p : partials) {
+            if (p.type == TransactionType.DEPOSIT) {
+                deposit.put(p.bankId, deposit.getOrDefault(p.bankId, 0D) + p.capital);
+            } else if (p.type == TransactionType.LOAN) {
+                loan.put(p.bankId, loan.getOrDefault(p.bankId, 0D) + p.capital);
+            }
+        }
+
+        Set<UUID> bankIds = new HashSet<>();
+        bankIds.addAll(deposit.keySet());
+        bankIds.addAll(loan.keySet());
+        for (UUID bankId : bankIds) {
+            BankRegistration bank = plugin.dbm.getUniqueBank(bankId.toString());
+            msg(sender, "command.list_my.list_item", bank.name,
+                    deposit.getOrDefault(bankId, 0D), loan.getOrDefault(bankId, 0D));
+        }
+        if (bankIds.isEmpty()) {
+            msg(sender, "command.list_my.empty_list");
         }
     }
 
