@@ -127,6 +127,115 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         }
     }
 
+    @SubCommand(value = "bankrupt", permission = "nb.force_bankrupt")
+    public void forceBankrupt(CommandSender sender, Arguments args) {
+        // TODO log
+        if (args.top() == null) throw new BadCommandException();
+        String type = args.next().toLowerCase();
+        if (args.top() == null) throw new BadCommandException();
+        String id = args.next();
+        if ("player".equals(type)) {
+            OfflinePlayer p = plugin.getServer().getOfflinePlayer(id);
+            if (p == null || p.getUniqueId() == null) {
+                throw new BadCommandException("command.bankrupt.player_not_found");
+            }
+            UUID pid = p.getUniqueId();
+            List<PartialRecord> partials = plugin.dbm.query(PartialRecord.class)
+                    .whereEq("player_id", pid.toString()).select();
+            List<BankAccount> accounts = plugin.dbm.query(BankAccount.class)
+                    .whereEq("player_id", pid.toString()).select();
+
+            Map<UUID, BankRegistration> updatedBanks = new HashMap<>();
+            for (PartialRecord r : partials) {
+                BankRegistration bank = updatedBanks.get(r.bankId);
+                if (bank == null) {
+                    bank = plugin.dbm.getUniqueBank(r.getBankId());
+                    updatedBanks.put(r.bankId, bank);
+                }
+                if (r.type == TransactionType.LOAN) {
+                    plugin.eco.withdrawPlayer(p, r.capital);
+                    bank.capital += r.capital;
+                } else if (r.type == TransactionType.DEPOSIT) {
+                    plugin.eco.depositPlayer(p, r.capital);
+                    bank.capital -= r.capital;
+                }
+            }
+            for (BankAccount r : accounts) {
+                BankRegistration bank = updatedBanks.get(r.bankId);
+                if (bank == null) {
+                    bank = plugin.dbm.getUniqueBank(r.getBankId());
+                    updatedBanks.put(r.bankId, bank);
+                }
+                double netDeposit = r.deposit + r.deposit_interest - r.loan - r.loan_interest;
+                bank.capital -= netDeposit;
+                if (netDeposit < 0) {
+                    plugin.eco.withdrawPlayer(p, -netDeposit);
+                } else {
+                    plugin.eco.depositPlayer(p, netDeposit);
+                }
+            }
+
+            plugin.dbm.query(PartialRecord.class).whereEq("player_id", pid.toString()).delete();
+            plugin.dbm.query(BankAccount.class).whereEq("player_id", pid.toString()).delete();
+            for (BankRegistration b : updatedBanks.values()) {
+                plugin.dbm.query(BankRegistration.class)
+                        .whereEq("bank_id", b.getBankId())
+                        .update(b, "capital");
+            }
+        } else if ("bank".equals(type)) {
+            // TODO make other codes check bankrupt state
+            /* STEP 1: Force acquire all loan
+             * STEP 2: Return all deposits
+             * STEP 3: Clear vault and balance with banker
+             * STEP 4: Update signs
+             */
+            BankRegistration bank = plugin.dbm.getUniqueBank(id);
+            if (bank == null) throw new BadCommandException("command.bankrupt.bank_not_found");
+
+            // STEP 1 & 2
+            List<PartialRecord> partials = plugin.dbm.query(PartialRecord.class)
+                    .whereEq("bank_id", bank.getBankId()).select();
+            List<BankAccount> accounts = plugin.dbm.query(BankAccount.class)
+                    .whereEq("bank_id", bank.getBankId()).select();
+            for (PartialRecord r : partials) {
+                if (r.type == TransactionType.LOAN) {
+                    bank.capital += r.capital;
+                    plugin.eco.withdrawPlayer(plugin.getServer().getOfflinePlayer(r.playerId), r.capital);
+                } else if (r.type == TransactionType.DEPOSIT) {
+                    bank.capital -= r.capital;
+                    plugin.eco.depositPlayer(plugin.getServer().getOfflinePlayer(r.playerId), r.capital);
+                }
+            }
+            for (BankAccount r : accounts) {
+                double netDeposit = r.deposit + r.deposit_interest - r.loan - r.loan_interest;
+                bank.capital -= netDeposit;
+                if (netDeposit < 0) {
+                    plugin.eco.withdrawPlayer(plugin.getServer().getOfflinePlayer(r.playerId), -netDeposit);
+                } else {
+                    plugin.eco.depositPlayer(plugin.getServer().getOfflinePlayer(r.playerId), netDeposit);
+                }
+            }
+            plugin.dbm.query(PartialRecord.class).whereEq("bank_id", bank.getBankId()).delete();
+            plugin.dbm.query(BankAccount.class).whereEq("bank_id", bank.getBankId()).delete();
+
+            // STEP 3
+            if (bank.capital >= 0) {
+                plugin.eco.depositPlayer(plugin.getServer().getOfflinePlayer(bank.ownerId), bank.capital);
+            } else {
+                plugin.eco.withdrawPlayer(plugin.getServer().getOfflinePlayer(bank.ownerId), -bank.capital);
+            }
+            bank.capital = 0D;
+            bank.status = BankStatus.BANKRUPT;
+            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.getBankId()).update(bank);
+
+            // STEP 4
+            // TODO update signs
+
+        } else {
+            throw new BadCommandException();
+        }
+    }
+
     @SubCommand(value = "deposit", permission = "nb.deposit_cmd")
     public void commandDeposit(CommandSender sender, Arguments args) {
         Player p = asPlayer(sender);

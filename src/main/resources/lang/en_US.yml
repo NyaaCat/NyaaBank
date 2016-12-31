@@ -8,6 +8,10 @@ command:
   list_my:
     list_item: "Bank: %s&r Deposit: %.2f Loan: %.2f"
     empty_list: "No bank account"
+  bankrupt:
+    player_not_found: "Player not found"
+    bank_not_found: "Bank not found or not unique"
+
   bank_list:
     list_player: "=== %s's banks ==="
     list_all: "=== All banks ==="
@@ -101,6 +105,10 @@ manual:
   top:
     description: "List banks by capital"
     usage: "/nb top"
+
+  bankrupt:
+    description: "Set someone as bankrupt"
+    usage: "/nb bankrupt <player|bank> <player-name|bank-id>"
 
   my:
     description: "List my accounts"
