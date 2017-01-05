@@ -246,26 +246,11 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         BankRegistration bank = plugin.dbm.getUniqueBank(partialBankId);
         if (bank == null) throw new BadCommandException("user.deposit.bank_not_found");
 
-        plugin.eco.withdrawPlayer(p, amount);
-        PartialRecord partial = new PartialRecord();
-        partial.transactionId = UUID.randomUUID();
-        partial.bankId = bank.bankId;
-        partial.playerId = p.getUniqueId();
-        partial.capital = amount;
-        partial.type = TransactionType.DEPOSIT;
-        partial.startDate = Instant.now();
-        plugin.dbm.query(PartialRecord.class).insert(partial);
-        plugin.dbm.log(TransactionType.DEPOSIT)
-                .from(p.getUniqueId())
-                .to(bank.bankId)
-                .capital(amount)
-                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString())
-                .insert();
-
-        bank.capital += amount;
-        plugin.dbm.query(BankRegistration.class)
-                .whereEq("bank_id", bank.bankId)
-                .update(bank, "capital");
+        try {
+            CommonAction.deposit(plugin, p, bank, amount);
+        } catch (CommonAction.TransactionException ex) {
+            throw new BadCommandException(ex.getMessage());
+        }
     }
 
     @SubCommand(value = "withdraw", permission = "nb.withdraw_cmd")
@@ -287,74 +272,10 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         BankRegistration bank = plugin.dbm.getUniqueBank(bankIdP);
         if (bank == null) throw new BadCommandException("user.withdraw.bank_not_found");
 
-        double totalDeposit = plugin.dbm.getTotalDeposit(bank.bankId, p.getUniqueId());
-        if (withdrawAll) {
-            if (totalDeposit >= bank.capital) throw new BadCommandException("user.withdraw.bank_run");
-            BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
-            account.deposit = 0D;
-            account.deposit_interest = 0D;
-            plugin.dbm.query(BankAccount.class)
-                    .whereEq("account_id", account.accountId)
-                    .update(account, "deposit", "deposit_interest");
-            plugin.dbm.query(PartialRecord.class)
-                    .whereEq("bank_id", bank.bankId.toString())
-                    .whereEq("player_id", p.getUniqueId())
-                    .whereEq("transaction_type", TransactionType.DEPOSIT.name())
-                    .delete();
-            bank.capital -= totalDeposit;
-            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.bankId.toString())
-                    .update(bank, "capital");
-            plugin.dbm.log(TransactionType.WITHDRAW).from(bank.bankId).to(p.getUniqueId())
-                    .capital(totalDeposit).insert();
-            plugin.eco.depositPlayer(p, totalDeposit);
-        } else {
-            if (amount <= 0) throw new BadCommandException("user.withdraw.invalid_amount");
-            if (amount > totalDeposit) throw new BadCommandException("user.withdraw.not_enough_deposit");
-            if (amount >= bank.capital) throw new BadCommandException("user.withdraw.bank_run");
-            double realAmount = 0;
-            List<PartialRecord> l = plugin.dbm.getPartialRecords(bank.bankId, p.getUniqueId(), TransactionType.DEPOSIT);
-            l.sort((a, b) -> a.capital.equals(b.capital) ? 0 : (a.capital < b.capital ? -1 : 1));
-            int idx = 0;
-            while (amount > 0 && idx < l.size()) {
-                PartialRecord r = l.get(idx);
-                if (amount > r.capital) {
-                    amount -= r.capital;
-                    realAmount += r.capital;
-                    plugin.dbm.query(PartialRecord.class).whereEq("transaction_id", r.transactionId.toString()).delete();
-                    idx++;
-                } else {
-                    realAmount += amount;
-                    r.capital -= amount;
-                    amount = -1;
-                    plugin.dbm.query(PartialRecord.class).whereEq("transaction_id", r.transactionId.toString())
-                            .update(r, "capital");
-                }
-            }
-            if (amount > 0) {
-                BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
-                if (amount > account.deposit + account.deposit_interest) {
-                    realAmount += account.deposit + account.deposit_interest;
-                    account.deposit = 0D;
-                    account.deposit_interest = 0D;
-                } else if (amount > account.deposit_interest) {
-                    account.deposit -= amount - account.deposit_interest;
-                    account.deposit_interest = 0D;
-                    realAmount += amount;
-                    amount = 0D;
-                } else {
-                    account.deposit_interest -= amount;
-                    realAmount += amount;
-                    amount = 0D;
-                }
-                plugin.dbm.query(BankAccount.class).whereEq("account_id", account.getAccountId())
-                        .update(account, "deposit", "deposit_interest");
-            }
-            bank.capital -= realAmount;
-            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.bankId.toString())
-                    .update(bank, "capital");
-            plugin.dbm.log(TransactionType.WITHDRAW).from(bank.bankId).to(p.getUniqueId())
-                    .capital(realAmount).insert();
-            plugin.eco.depositPlayer(p, realAmount);
+        try {
+            CommonAction.withdraw(plugin, p, bank, amount, withdrawAll);
+        } catch (CommonAction.TransactionException ex) {
+            throw new BadCommandException(ex.getMessage());
         }
     }
 
@@ -367,35 +288,12 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         if (partialId == null) throw new BadCommandException();
         BankRegistration bank = plugin.dbm.getUniqueBank(partialId);
         if (bank == null) throw new BadCommandException("user.loan.bank_not_found");
-        if (bank.capital <= amount) throw new BadCommandException("user.loan.not_enough_money_bank");
-        BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
-        if (account != null && (account.loan > 0 || account.loan_interest > 0)) {
-            throw new BadCommandException("user.loan.has_loan");
+
+        try {
+            CommonAction.loan(plugin, p, bank, amount);
+        } catch (CommonAction.TransactionException ex) {
+            throw new BadCommandException(ex.getMessage());
         }
-        if (plugin.dbm.query(PartialRecord.class)
-                .whereEq("player_id", p.getUniqueId().toString())
-                .whereEq("bank_id", bank.getBankId())
-                .whereEq("transaction_type", TransactionType.LOAN.name())
-                .count() > 0) {
-            throw new BadCommandException("user.loan.has_loan");
-        }
-        PartialRecord partial = new PartialRecord();
-        partial.transactionId = UUID.randomUUID();
-        partial.bankId = bank.bankId;
-        partial.playerId = p.getUniqueId();
-        partial.capital = amount;
-        partial.type = TransactionType.LOAN;
-        partial.startDate = Instant.now();
-        plugin.dbm.query(PartialRecord.class).insert(partial);
-        bank.capital -= amount;
-        plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.getBankId()).update(bank, "capital");
-        plugin.eco.depositPlayer(p, amount);
-        plugin.dbm.log(TransactionType.LOAN)
-                .to(p.getUniqueId())
-                .from(bank.bankId)
-                .capital(amount)
-                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString())
-                .insert();
     }
 
     @SubCommand(value = "repay", permission = "nb.repay_cmd")
@@ -417,74 +315,10 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         BankRegistration bank = plugin.dbm.getUniqueBank(bankIdP);
         if (bank == null) throw new BadCommandException("user.repay.bank_not_found");
 
-        double totalLoan = plugin.dbm.getTotalLoan(bank.bankId, p.getUniqueId());
-        if (repayAll) {
-            if (!plugin.eco.has(p, totalLoan)) throw new BadCommandException("user.repay.not_enough_money");
-            BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
-            account.loan = 0D;
-            account.loan_interest = 0D;
-            plugin.dbm.query(BankAccount.class)
-                    .whereEq("account_id", account.accountId)
-                    .update(account, "loan", "loan_interest");
-            plugin.dbm.query(PartialRecord.class)
-                    .whereEq("bank_id", bank.bankId.toString())
-                    .whereEq("player_id", p.getUniqueId())
-                    .whereEq("transaction_type", TransactionType.LOAN.name())
-                    .delete();
-            bank.capital += totalLoan;
-            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.bankId.toString())
-                    .update(bank, "capital");
-            plugin.dbm.log(TransactionType.REPAY).to(bank.bankId).from(p.getUniqueId())
-                    .capital(totalLoan).insert();
-            plugin.eco.withdrawPlayer(p, totalLoan);
-        } else {
-            if (amount <= 0) throw new BadCommandException("user.repay.invalid_amount");
-            if (amount > totalLoan) throw new BadCommandException("user.repay.no_need_to_pay");
-            if (!plugin.eco.has(p, amount)) throw new BadCommandException("user.repay.not_enough_money");
-            double realAmount = 0;
-            List<PartialRecord> l = plugin.dbm.getPartialRecords(bank.bankId, p.getUniqueId(), TransactionType.LOAN);
-            l.sort((a, b) -> a.capital.compareTo(b.capital));
-            int idx = 0;
-            while (amount > 0 && idx < l.size()) {
-                PartialRecord r = l.get(idx);
-                if (amount > r.capital) {
-                    amount -= r.capital;
-                    realAmount += r.capital;
-                    plugin.dbm.query(PartialRecord.class).whereEq("transaction_id", r.transactionId.toString()).delete();
-                    idx++;
-                } else {
-                    realAmount += amount;
-                    r.capital -= amount;
-                    amount = -1;
-                    plugin.dbm.query(PartialRecord.class).whereEq("transaction_id", r.transactionId.toString())
-                            .update(r, "capital");
-                }
-            }
-            if (amount > 0) {
-                BankAccount account = plugin.dbm.getAccount(bank.bankId, p.getUniqueId());
-                if (amount > account.loan + account.loan_interest) {
-                    realAmount += account.loan + account.loan_interest;
-                    account.loan = 0D;
-                    account.loan_interest = 0D;
-                } else if (amount > account.loan_interest) {
-                    account.loan -= amount - account.loan_interest;
-                    account.loan_interest = 0D;
-                    realAmount += amount;
-                    amount = 0D;
-                } else {
-                    account.loan_interest -= amount;
-                    realAmount += amount;
-                    amount = 0D;
-                }
-                plugin.dbm.query(BankAccount.class).whereEq("account_id", account.getAccountId())
-                        .update(account, "loan", "loan_interest");
-            }
-            bank.capital += realAmount;
-            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.bankId.toString())
-                    .update(bank, "capital");
-            plugin.dbm.log(TransactionType.REPAY).to(bank.bankId).from(p.getUniqueId())
-                    .capital(realAmount).insert();
-            plugin.eco.withdrawPlayer(p, realAmount);
+        try {
+            CommonAction.repay(plugin, p, bank, amount, repayAll);
+        } catch (CommonAction.TransactionException ex) {
+            throw new BadCommandException(ex.getMessage());
         }
     }
 
