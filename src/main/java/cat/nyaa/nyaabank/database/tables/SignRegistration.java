@@ -12,13 +12,24 @@ import java.util.UUID;
 /* Information about the signs in world map */
 @DataTable("sign_registration")
 public class SignRegistration {
-    @DataColumn
+    public UUID signId;
+    public UUID bankId;
+    public TransactionType type; // DEPOSIT/WITHDRAW/LOAN/REPAY
+    public Location location;
+    @DataColumn("loan_amount")
+    public Double loanAmount; // for LOAN sign only
+    @DataColumn("commission_fee")
+    public Double commissionFee;
+
     @PrimaryKey
-    Integer id = null;
-    UUID bankId;
-    TransactionType type;
-    Location location;
-    // TODO
+    @DataColumn("sign_id")
+    public String getSignId() {
+        return signId.toString();
+    }
+
+    public void setSignId(String signId) {
+        this.signId = UUID.fromString(signId);
+    }
 
     @DataColumn("bank_id")
     public String getBankId() {
@@ -52,11 +63,11 @@ public class SignRegistration {
     }
 
     @DataColumn("location_x")
-    public Integer getCoordinateX() {
-        return location.getBlockX();
+    public Long getCoordinateX() {
+        return (long)location.getBlockX();
     }
 
-    public void setCoordinateX(Integer x) {
+    public void setCoordinateX(Long x) {
         if (location == null) {
             location = new Location(Bukkit.getWorlds().get(0), x, 0, 0);
         } else {
@@ -65,11 +76,11 @@ public class SignRegistration {
     }
 
     @DataColumn("location_y")
-    public Integer getCoordinateY() {
-        return location.getBlockY();
+    public Long getCoordinateY() {
+        return (long)location.getBlockY();
     }
 
-    public void setCoordinateY(Integer y) {
+    public void setCoordinateY(Long y) {
         if (location == null) {
             location = new Location(Bukkit.getWorlds().get(0), 0, y, 0);
         } else {
@@ -78,11 +89,11 @@ public class SignRegistration {
     }
 
     @DataColumn("location_z")
-    public Integer getCoordinateZ() {
-        return location.getBlockZ();
+    public Long getCoordinateZ() {
+        return (long)location.getBlockZ();
     }
 
-    public void setCoordinateZ(Integer z) {
+    public void setCoordinateZ(Long z) {
         if (location == null) {
             location = new Location(Bukkit.getWorlds().get(0), 0, 0, z);
         } else {

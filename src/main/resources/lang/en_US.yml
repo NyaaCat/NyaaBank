@@ -70,6 +70,23 @@ user:
     bank_not_found: "Bank not found or not unique"
     no_need_to_pay: "You do not need to pay that much money"
     not_enough_money: "You do not have that much money"
+  sign:
+    invalid_sign: "This is an invalid bank sign"
+    invalid_number: "This is not an valid number"
+    input_timeout: "You didn't type a number in time. Action cancelled"
+    loan_cancelled: "Loan cancelled"
+    create_success: "Bank sign created"
+    create_fail: "Failed to setup bank sign"
+
+    text_saving: "Saving Service"
+    text_withdraw: "Withdraw"
+    text_loan: "Loan Service"
+    text_repay: "Repay"
+
+    hint_saving: "Interest %.2f%%"
+    hint_withdraw: "Fee: %.2f"
+    hint_loan: "%.2f/%.2f"
+    hint_repay: "Fee: %.2f"
 
 manual:
   no_description: "No description"

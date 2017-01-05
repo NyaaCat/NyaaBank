@@ -28,17 +28,16 @@ public class Configuration extends PluginConfigure {
     @Serializable(name = "debit_interest_limit.max")
     public double debitInterestLimitMax = 5D; // hundred percent
 
+    @Serializable(name = "sign.sign_magic")
+    public String signMagic = "[BANK]";
+    @Serializable(name = "sign.color_active")
+    public String signColorActive = "§l§a";
+    @Serializable(name = "sign.color_bankrupt")
+    public String signColorBankrupt = "§l§c";
+
     /* Data stored in config file. Do not edit these entries manually */
     @Serializable(name = "data.last_check_point")
     public long lastCheckPoint = -1L; // unix timestamp ms. negative if no check point have been reached.
-
-
-//    @Serializable(name = "min_capitalization")
-//    public int minCapitalization = 1000000;
-//    @Serializable(name = "sign_color.active")
-//    public String signColorActive = "§l§a";
-//    @Serializable(name = "sign_color.bankrupt")
-//    public String signColorBankrupt = "§l§c";
 
     public Configuration(NyaaBank pl) {
         this.plugin = pl;
