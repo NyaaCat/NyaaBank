@@ -21,6 +21,10 @@ repositories {
         name 'nyaa'
         url 'https://raw.githubusercontent.com/NyaaCat/nyaautils/maven-repo'
     }
+    maven {
+        name 'sk89q'
+        url 'http://maven.sk89q.com/artifactory/repo/'
+    }
 }
 
 dependencies {
