@@ -1,0 +1,28 @@
+language: java
+jdk: oraclejdk8
+before_install:
+- 'sed -i "s/^\(version: \).*$/\1$main_version.$TRAVIS_BUILD_NUMBER/g" src/main/resources/plugin.yml'
+before_deploy:
+- git config --global user.email "builds@travis-ci.com"
+- git config --global user.name "Travis CI"
+- export GIT_TAG=$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER
+- git tag $GIT_TAG -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
+- git push -q https://$GITHUB_KEY@github.com/NyaaCat/NyaaBank --follow-tags
+deploy:
+  skip_cleanup: true
+  provider: releases
+  prerelease: true
+  api_key:
+    secure: "gvV7aoVzyYcwwWuhmIEhP6x5CqLt2e5RlJPLKsocD6zch65R1h91XRkMx/HcmOCu1cqPW8O6kEa4a1eC+yCPaWRI4bGTmKJ1F2wpWsoSlSJ8zGDgHb6hAfnVk9RptRsLI5W179IjYwSWzJepUO/mdV5bAaBlM8ldtZAAPYmX6k0ggCCXeAMqHo1MhYBQQSnt39w4udxuAwFKTkVvbw55pST00xqe+6GZHBh7cBurQRpjs2/zggp4rgrf4bPKfTX2bASGwH+lZBGACUpgbxjBEBnFJS2rNDZLy2GA7BX0IYD7FBHdKJ5m5KSzXPHsPAZC4/g5rquweAI03uWiAGEYPeulDcqQpoqpJERhstMITd5rvcT52U4oZ/UQrJ7cMq8/5fqTNtTLGvEi4UAvC/o9P/z3tbceRJ8TypFZmShGmgM8+v+OhSMXfX7jnrK7MWxhBNwuOJRG6dGpCYvt03zfgxkU+9AeqIzCvGQA5V/wpFIJbTGYAyfVJX73AJp4TlqY1PyUKNaSASk/yKjV5ogdeGKJNdEY+K514W6dA9tVK6ZFUPISPmhJi879mUkFERPadkbX6Sd6HYakwXTathHCEvgVbBcoa6/pgeOFxeOeTAasBn3d5fASQSjpPPWT61+tgME2br1/szG51akCVqq09Pi65N3x2lXCJ9nL3W9/L3o="
+  file: build/libs/NyaaBank.jar
+  on:
+    tags: false
+    all_branches: true
+branches:
+  except:
+  - "/^*-v[0-9]/"
+  - maven-repo
+env:
+  global:
+  - main_version=2
+  - secure: LSTaspS+hPCjtz7cpxVkufRGwSPEHPTxjnyIQOdijq3c67USNLuwXauw6QQCX6il8NM6S0F4rY6d6sdylhNx9kaOLcOokscfd5argND4Ju/+V1/hKcV6csh4GdZu7OBxEJQ7OTWfd335pF9Uizla5jl+hCYvczAXxANcBE32PDemBXe4Tj4wJMfEjaWBN8Ry6ZK+9IJqZ9KGNcS5+jtGt6ZbTvH9k7ZE1G5INOdIGXPzLlYA07lgfzHopdXRynHoDTqRNaMVlo7t/g1dcNVNmEzOpdFYEcuET3EUgxqCOmKAyC8xHFD4E2Mq6u9CmV2ZQHEXztdOOtVIlPWcT5++6svc1mrWAOP9tHzBWGJrArLt2H9kAeVSP1RZ5U4msZw/LuJl2QjSDUUDQRuAKfkVvvmh/nOnWflvpy8myfnub2UQE9UWq5KqgQ6bX4QOj0ggOpFvCUJRm6Krmr86dg6uGSJD+LkAjSKXLyiUO4iiNk+bUzMFtKFG24yNwXT5caeHjpTsWOQu3xqwMxEPOgSU4Lpt747bvkDMJsosMXDbxUygz8Okn2RtGHRS3KdHM0U6RMlgq+NHcWtALAi/pJW2tsoqz3DRHkwvQLkWu2x9jewPw+qqAD8zV8bmUpFR+ES4Q+CFnloarqvMqVolyDxtheXVkZ3vEL9BIjIY6NDKMdY=
