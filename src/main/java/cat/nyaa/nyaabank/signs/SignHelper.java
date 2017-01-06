@@ -80,6 +80,7 @@ public final class SignHelper {
             default:
                 throw new IllegalArgumentException("Invalid sign type");
         }
+        sign.update();
     }
 
     /**
@@ -88,7 +89,7 @@ public final class SignHelper {
      * signReg or new object is returned, null is returned if errors occur
      * The sign itself is not altered.
      */
-    public static SignRegistration parseSign(NyaaBank plugin, String[] lines, SignRegistration signReg) {
+    public static SignRegistration parseSign(NyaaBank plugin, String[] lines, SignRegistration signReg, Location signLoc) {
         if (signReg == null) {
             signReg = new SignRegistration();
             signReg.signId = UUID.randomUUID();
@@ -102,6 +103,8 @@ public final class SignHelper {
         if (bank == null) return null;
         signReg.bankId = bank.bankId;
         signReg.commissionFee = 0D; //TODO commission
+        signReg.location = signLoc.clone();
+        signReg.loanAmount = -1D; // to meet DB not null constraint
         String srv = lines[2].toUpperCase();
         switch (srv) {
             case "DEPOSIT":

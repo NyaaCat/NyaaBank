@@ -61,9 +61,9 @@ class ChatInputCallbacks {
                     }
                     if (number == null) {
                         ev.getPlayer().sendMessage(I18n._("user.sign.invalid_number"));
-                        return;
+                    } else {
+                        callbacks.get(playerId).onDoubleInput(ev.getPlayer(), number, false);
                     }
-                    callbacks.get(playerId).onDoubleInput(ev.getPlayer(), number, false);
                 }
                 ev.setCancelled(true);
             } else {

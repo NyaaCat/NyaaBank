@@ -263,6 +263,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         if ("ALL".equals(amountS.toUpperCase())) {
             withdrawAll = true;
             amount = -1;
+            args.next();
         } else {
             withdrawAll = false;
             amount = args.nextDouble();
@@ -306,6 +307,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         if ("ALL".equals(amountS.toUpperCase())) {
             repayAll = true;
             amount = -1;
+            args.next();
         } else {
             repayAll = false;
             amount = args.nextDouble();

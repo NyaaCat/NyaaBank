@@ -77,6 +77,7 @@ user:
     loan_cancelled: "Loan cancelled"
     create_success: "Bank sign created"
     create_fail: "Failed to setup bank sign"
+    input_accepted: "Transaction accepted."
 
     text_saving: "Saving Service"
     text_withdraw: "Withdraw"
@@ -87,6 +88,11 @@ user:
     hint_withdraw: "Fee: %.2f"
     hint_loan: "%.2f/%.2f"
     hint_repay: "Fee: %.2f"
+
+    input_prompt_deposit: "Type the amount of money you want to deposit in %d seconds"
+    input_prompt_withdraw: "Type the amount of money you want to withdraw (or `ALL`) in %d seconds"
+    input_prompt_loan: "Type `CONFIRM` in %d seconds to confirm the transaction"
+    input_prompt_repay: "Type the amount of money you want to repay (or `ALL`) in %d seconds"
 
 manual:
   no_description: "No description"

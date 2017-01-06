@@ -59,6 +59,7 @@ public class SignListener implements Listener{
             }
             switch (sr.type) {
                 case DEPOSIT:
+                    p.sendMessage(I18n._("user.sign.input_prompt_deposit", 7));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
@@ -66,6 +67,7 @@ public class SignListener implements Listener{
                                     try {
                                         if (isAll) throw new CommonAction.TransactionException("user.sign.invalid_number");
                                         CommonAction.deposit(plugin, p, bank, input);
+                                        p.sendMessage(I18n._("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
                                         p.sendMessage(I18n._(ex.getMessage()));
                                     }
@@ -73,12 +75,14 @@ public class SignListener implements Listener{
                             });
                     break;
                 case WITHDRAW:
+                    p.sendMessage(I18n._("user.sign.input_prompt_withdraw", 7));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
                                 public void onDoubleInput(Player p, double input, boolean isAll) {
                                     try {
                                         CommonAction.withdraw(plugin, p, bank, input, isAll);
+                                        p.sendMessage(I18n._("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
                                         p.sendMessage(I18n._(ex.getMessage()));
                                     }
@@ -86,6 +90,7 @@ public class SignListener implements Listener{
                             });
                     break;
                 case LOAN:
+                    p.sendMessage(I18n._("user.sign.input_prompt_loan", 7));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
@@ -93,6 +98,7 @@ public class SignListener implements Listener{
                                     try {
                                         if (!isAll) throw new CommonAction.TransactionException("user.sign.loan_cancelled");
                                         CommonAction.loan(plugin, p, bank, sr.loanAmount);
+                                        p.sendMessage(I18n._("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
                                         p.sendMessage(I18n._(ex.getMessage()));
                                     }
@@ -100,12 +106,14 @@ public class SignListener implements Listener{
                             });
                     break;
                 case REPAY:
+                    p.sendMessage(I18n._("user.sign.input_prompt_repay", 7));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
                                 public void onDoubleInput(Player p, double input, boolean isAll) {
                                     try {
                                         CommonAction.repay(plugin, p, bank, input, isAll);
+                                        p.sendMessage(I18n._("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
                                         p.sendMessage(I18n._(ex.getMessage()));
                                     }
@@ -125,7 +133,7 @@ public class SignListener implements Listener{
         SignRegistration sr = SignHelper.getSign(plugin, ev.getBlock().getLocation());
         boolean newSign = false;
         if (sr == null) newSign = true;
-        sr = SignHelper.parseSign(plugin, ev.getLines(), sr);
+        sr = SignHelper.parseSign(plugin, ev.getLines(), sr, ev.getBlock().getLocation());
         if (sr == null) {
             ev.getPlayer().sendMessage(I18n._("user.sign.create_fail"));
             return;
@@ -152,5 +160,5 @@ public class SignListener implements Listener{
         }.runTaskLater(plugin, 1);
     }
 
-    //TODO sign break
+    //TODO sign break protect
 }

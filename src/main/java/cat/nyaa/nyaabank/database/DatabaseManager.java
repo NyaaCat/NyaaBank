@@ -2,10 +2,7 @@ package cat.nyaa.nyaabank.database;
 
 import cat.nyaa.nyaabank.NyaaBank;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
-import cat.nyaa.nyaabank.database.tables.BankAccount;
-import cat.nyaa.nyaabank.database.tables.BankRegistration;
-import cat.nyaa.nyaabank.database.tables.PartialRecord;
-import cat.nyaa.nyaabank.database.tables.TransactionLog;
+import cat.nyaa.nyaabank.database.tables.*;
 import cat.nyaa.utils.database.SQLiteDatabase;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -36,7 +33,7 @@ public class DatabaseManager extends SQLiteDatabase {
         return new Class<?>[]{
                 BankRegistration.class,
                 BankAccount.class,
-                //SignRegistration.class,
+                SignRegistration.class,
                 PartialRecord.class,
                 TransactionLog.class
         };

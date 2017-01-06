@@ -52,11 +52,13 @@ public final class CommonAction {
         if (withdrawAll) {
             if (totalDeposit >= bank.capital) throw new TransactionException("user.withdraw.bank_run");
             BankAccount account = plugin.dbm.getAccount(bank.bankId, player.getUniqueId());
-            account.deposit = 0D;
-            account.deposit_interest = 0D;
-            plugin.dbm.query(BankAccount.class)
-                    .whereEq("account_id", account.accountId)
-                    .update(account, "deposit", "deposit_interest");
+            if (account != null) {
+                account.deposit = 0D;
+                account.deposit_interest = 0D;
+                plugin.dbm.query(BankAccount.class)
+                        .whereEq("account_id", account.accountId)
+                        .update(account, "deposit", "deposit_interest");
+            }
             plugin.dbm.query(PartialRecord.class)
                     .whereEq("bank_id", bank.bankId.toString())
                     .whereEq("player_id", player.getUniqueId())
@@ -162,11 +164,13 @@ public final class CommonAction {
         if (repayAll) {
             if (!plugin.eco.has(player, totalLoan)) throw new TransactionException("user.repay.not_enough_money");
             BankAccount account = plugin.dbm.getAccount(bank.bankId, player.getUniqueId());
-            account.loan = 0D;
-            account.loan_interest = 0D;
-            plugin.dbm.query(BankAccount.class)
-                    .whereEq("account_id", account.accountId)
-                    .update(account, "loan", "loan_interest");
+            if (account != null) {
+                account.loan = 0D;
+                account.loan_interest = 0D;
+                plugin.dbm.query(BankAccount.class)
+                        .whereEq("account_id", account.accountId)
+                        .update(account, "loan", "loan_interest");
+            }
             plugin.dbm.query(PartialRecord.class)
                     .whereEq("bank_id", bank.bankId.toString())
                     .whereEq("player_id", player.getUniqueId())
