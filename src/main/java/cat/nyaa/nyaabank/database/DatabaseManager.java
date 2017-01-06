@@ -121,6 +121,30 @@ public class DatabaseManager extends SQLiteDatabase {
         return ret;
     }
 
+    /**
+     * Return next unused bank id number
+     */
+    public long getNextIdNumber() {
+        long id = 1;
+        for (BankRegistration b : query(BankRegistration.class).select()) {
+            if (b.idNumber >= id) id = b.idNumber + 1;
+        }
+        return id;
+    }
+
+    public BankRegistration getBankByIdNumber(long idNumber) {
+        try {
+            return query(BankRegistration.class).whereEq("id_number", idNumber).selectUnique();
+        } catch (RuntimeException ex) {
+            // TODO
+            if (ex.getMessage() != null && ex.getMessage().startsWith("SQL Selection")) {
+                return null;
+            } else {
+                throw ex;
+            }
+        }
+    }
+
     public void disableAutoCommit() {
         try {
             getConnection().setAutoCommit(false);

@@ -80,7 +80,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
             banks.sort((a, b) -> a.ownerId.compareTo(b.ownerId));
             for (BankRegistration r : banks) {
                 OfflinePlayer p = plugin.getServer().getOfflinePlayer(r.ownerId);
-                msg(sender, "command.bank_list.list_item", r.name, p.getName(), r.bankId.toString());
+                msg(sender, "command.bank_list.list_item", r.idNumber, r.name, p.getName(), r.bankId.toString());
             }
         } else {   // players
             Player p = asPlayer(sender);
@@ -96,7 +96,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
 
             banks.sort((a, b) -> a.name.compareTo(b.name));
             for (BankRegistration r : banks) {
-                msg(sender, "command.bank_list.list_item", r.name, p.getName(), r.bankId.toString());
+                msg(sender, "command.bank_list.list_item", r.idNumber, r.name, p.getName(), r.bankId.toString());
             }
         }
     }

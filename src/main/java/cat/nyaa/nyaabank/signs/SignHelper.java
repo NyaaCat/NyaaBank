@@ -99,7 +99,13 @@ public final class SignHelper {
                 !stringEqIgnoreColor(magic, SignListener.SIGN_MAGIC_FALLBACK, true)) {
             return null;
         }
-        BankRegistration bank = plugin.dbm.getUniqueBank(lines[1]);
+        BankRegistration bank = null;
+        try {
+            long idNumber = Long.parseLong(lines[1]);
+            bank = plugin.dbm.getBankByIdNumber(idNumber);
+        } catch (NumberFormatException ex) {
+            bank = null;
+        }
         if (bank == null) return null;
         signReg.bankId = bank.bankId;
         signReg.commissionFee = 0D; //TODO commission

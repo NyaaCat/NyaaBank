@@ -14,6 +14,8 @@ import java.util.UUID;
 public class BankRegistration {
     public UUID bankId;
     public UUID ownerId;
+    @DataColumn("id_number")
+    public Long idNumber; // short identifier for human input
     @DataColumn("bank_name")
     public String name;
     @DataColumn("registered_capital")

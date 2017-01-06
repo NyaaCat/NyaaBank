@@ -62,6 +62,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         plugin.eco.withdrawPlayer(p, capital);
         BankRegistration reg = new BankRegistration();
         reg.bankId = UUID.randomUUID();
+        reg.idNumber = plugin.dbm.getNextIdNumber(); // TODO print idNumber EVERYWHERE
         reg.name = bankName;
         reg.ownerId = p.getUniqueId();
         reg.capital = capital;
@@ -75,7 +76,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         reg.debitInterest = 0D;
         reg.debitInterestNext = reg.debitInterest;
         q.insert(reg);
-        msg(sender, "command.reg.established", reg.name, reg.bankId.toString());
+        msg(sender, "command.reg.established", reg.idNumber, reg.name, reg.bankId.toString());
     }
 
     @SubCommand(value = "top", permission = "nb.top")
@@ -347,6 +348,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
             BankRegistration reg = new BankRegistration();
             reg.bankId = UUID.randomUUID();
             reg.name = "Test bank " + Integer.toString(i);
+            reg.idNumber = (long)i;
             reg.ownerId = UUID.randomUUID();
             reg.capital = 10000D;
             reg.registered_capital = 10000D;

@@ -1,7 +1,7 @@
 command:
   reg:
     name_duplicate: "Bank name already exists"
-    established: "Bank `%s&r` established. ID={%s}"
+    established: "(#%d) Bank `%s&r` established. ID={%s}"
     not_enough_capital: "The player has not that much money"
   top:
     list_item: "%3d. %s&r(%.2f) {%s}"
@@ -15,7 +15,7 @@ command:
   bank_list:
     list_player: "=== %s's banks ==="
     list_all: "=== All banks ==="
-    list_item: "%s {Owner: %s, bankId: %s}"
+    list_item: "(#%d) %s {Owner: %s, bankId: %s}"
     list_empty: "No registered bank"
   bank_info:
     no_such_bank: "Bank not found or not unique"
@@ -157,3 +157,11 @@ manual:
   repay:
     description: "Repay the loan"
     usage: "/nb repay <amount|ALL> <bank-id>"
+
+  _check:
+    description: "WARN: debug only. Force run checkpoint routine"
+    usage: "/nb _check"
+
+  _benchmark:
+    description: "WARN: data will be DESTROYED. Test database performance"
+    usage: "/nb _benchmark"
