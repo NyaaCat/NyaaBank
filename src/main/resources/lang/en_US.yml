@@ -31,11 +31,11 @@ command:
       Status: %s
       Registered Capital: %.2f
       Current Capital: %.2f
-      Deposit Interest Rate: %f
-      Loan Interest Rate: %f
+      Deposit Interest Rate: %f%%
+      Loan Interest Rate: %f%%
       Interest Type: %s
-      Next Deposit Interest Rate: %f
-      Next Loan Interest Rate: %f
+      Next Deposit Interest Rate: %f%%
+      Next Loan Interest Rate: %f%%
       Next Interest Type: %s
   bank_interest:
     no_such_bank: "Bank not found or not unique"
@@ -91,7 +91,7 @@ user:
 
     hint_saving: "Interest %.2f%%"
     hint_withdraw: "Fee: %.2f"
-    hint_loan: "%.2f/%.2f"
+    hint_loan: "%.2f/%.2f%%"
     hint_repay: "Fee: %.2f"
 
     input_prompt_deposit: "Type the amount of money you want to deposit in %d seconds"

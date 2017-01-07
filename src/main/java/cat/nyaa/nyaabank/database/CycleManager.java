@@ -120,12 +120,12 @@ public class CycleManager {
                 double deposit_interest = 0;
                 switch (bank.interestType) {
                     case SIMPLE:
-                        deposit_interest = account.deposit * bank.savingInterest;
+                        deposit_interest = account.deposit * bank.savingInterest /100D;
                         break;
                     case COMPOUND:
-                        deposit_interest = (account.deposit + account.deposit_interest) * bank.savingInterest;
+                        deposit_interest = (account.deposit + account.deposit_interest) * bank.savingInterest /100D;
                 }
-                deposit_interest = Math.round(deposit_interest * 1000) / 1000;
+                deposit_interest = Math.round(deposit_interest * 1000D) / 1000D; // round to 10^-3
 
                 bank.capital -= deposit_interest;
                 if (deposit_interest >= 0) {
@@ -142,12 +142,12 @@ public class CycleManager {
                 double loan_interest = 0;
                 switch (bank.interestType) {
                     case SIMPLE:
-                        loan_interest = account.loan * bank.debitInterest;
+                        loan_interest = account.loan * bank.debitInterest / 100D;
                         break;
                     case COMPOUND:
-                        loan_interest = (account.loan + account.loan_interest) * bank.debitInterest;
+                        loan_interest = (account.loan + account.loan_interest) * bank.debitInterest / 100D;
                 }
-                loan_interest = Math.round(loan_interest * 1000) / 1000;
+                loan_interest = Math.round(loan_interest * 1000D) / 1000D;
 
                 if (loan_interest >= 0) {
                     account.loan_interest += loan_interest;
@@ -183,9 +183,9 @@ public class CycleManager {
 
             switch (partial.type) {
                 case DEPOSIT: { // Deposit interest
-                    double deposit_interest = partial.capital * bank.savingInterest;
+                    double deposit_interest = partial.capital * bank.savingInterest / 100D;
                     deposit_interest *= (designatedTimestamp - partial.startDate.toEpochMilli()) / cycleLength;
-                    deposit_interest = Math.round(deposit_interest * 1000) / 1000;
+                    deposit_interest = Math.round(deposit_interest * 1000D) / 1000D;
 
                     if (deposit_interest >= 0) {
                         account.deposit += partial.capital;
@@ -210,9 +210,9 @@ public class CycleManager {
                     break;
                 }
                 case LOAN: { // Loan interest
-                    double loan_interest = partial.capital * bank.debitInterest;
+                    double loan_interest = partial.capital * bank.debitInterest / 100D;
                     loan_interest *= (designatedTimestamp - partial.startDate.toEpochMilli()) / cycleLength;
-                    loan_interest = Math.round(loan_interest * 1000) / 1000;
+                    loan_interest = Math.round(loan_interest * 1000D) / 1000D;
 
                     if (loan_interest >= 0) {
                         account.loan += partial.capital;

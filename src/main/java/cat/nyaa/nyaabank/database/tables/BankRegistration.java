@@ -23,13 +23,13 @@ public class BankRegistration {
     @DataColumn("capital")
     public Double capital; // actual capital left
     @DataColumn("interest_rate_saving")
-    public Double savingInterest; // default saving interest
+    public Double savingInterest; // default saving interest, hundred percent
     @DataColumn("interest_rate_debit")
-    public Double debitInterest; // default loan interest
+    public Double debitInterest; // default loan interest, hundred percent
     @DataColumn("interest_rate_saving_next")
-    public Double savingInterestNext; // saving interest for next cycle
+    public Double savingInterestNext; // saving interest for next cycle, hundred percent
     @DataColumn("interest_rate_debit_next")
-    public Double debitInterestNext; // loan interest for next cycle
+    public Double debitInterestNext; // loan interest for next cycle, hundred percent
 
     public Instant establishDate; // Stored as human readable string
     public BankStatus status;
