@@ -5,7 +5,6 @@ import cat.nyaa.nyaabank.database.DatabaseManager;
 import cat.nyaa.nyaabank.signs.SignListener;
 import cat.nyaa.utils.VaultUtil;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -41,5 +40,15 @@ public class NyaaBank extends JavaPlugin {
         cfg.save();
         dbm.close();
         i18n.reset();
+    }
+
+    // Reload plugin simply disable the plugin without saving config
+    public void doReload() {
+        HandlerList.unregisterAll(this);
+        getServer().getScheduler().cancelTasks(this);
+        getCommand("nyaabank").setExecutor(null);
+        dbm.close();
+        i18n.reset();
+        onEnable();
     }
 }

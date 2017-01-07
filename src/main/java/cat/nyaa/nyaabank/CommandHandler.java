@@ -13,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.Instant;
 import java.util.*;
@@ -323,6 +324,17 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         } catch (CommonAction.TransactionException ex) {
             throw new BadCommandException(ex.getMessage());
         }
+    }
+
+    @SubCommand(value = "reload", permission = "nb.reload")
+    public void commandReload(CommandSender sender, Arguments args) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                plugin.doReload();
+                sender.sendMessage(I18n._("command.reload.complete"));
+            }
+        }.runTaskLater(plugin, 1L);
     }
 
     @SubCommand(value = "_check", permission = "nb.debug") // TODO: for debug only

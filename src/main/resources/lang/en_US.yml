@@ -11,6 +11,8 @@ command:
   bankrupt:
     player_not_found: "Player not found"
     bank_not_found: "Bank not found or not unique"
+  reload:
+    complete: "Reload Completed"
 
   bank_list:
     list_player: "=== %s's banks ==="
@@ -160,6 +162,10 @@ manual:
   repay:
     description: "Repay the loan"
     usage: "/nb repay <amount|ALL> <bank-id>"
+
+  reload:
+    description: "Reload plugin"
+    usage: "/nb reload"
 
   _check:
     description: "WARN: debug only. Force run checkpoint routine"
