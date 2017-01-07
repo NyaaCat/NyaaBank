@@ -337,12 +337,12 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         }.runTaskLater(plugin, 1L);
     }
 
-    @SubCommand(value = "_check", permission = "nb.debug") // TODO: for debug only
+    @SubCommand(value = "_check", permission = "nb.debug") // for debug only
     public void forceCheckPoint(CommandSender sender, Arguments args) {
-        plugin.cycle.updateDatabaseInterests(System.currentTimeMillis(), plugin.cfg.interestCycle);
+        plugin.cycle.updateDatabaseInterests(plugin.cycle.getNextCheckpoint(), plugin.cfg.interestCycle);
     }
 
-    @SubCommand(value = "_benchmark", permission = "nb.debug") // TODO: for debug only
+    @SubCommand(value = "_benchmark", permission = "nb.debug") // for debug only
     public void checkPointDbBenchmark(CommandSender sender, Arguments args) { // WARN: will destroy database
         final int NUM_BANK = 100;
         final int NUM_ACCOUT = 500;

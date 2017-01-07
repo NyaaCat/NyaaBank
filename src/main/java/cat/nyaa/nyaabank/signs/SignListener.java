@@ -33,7 +33,6 @@ public class SignListener implements Listener{
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRightClickSign(PlayerInteractEvent ev) {
-        // TODO log
         if (!ev.hasBlock()) return;
         if (ev.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Material blockType = ev.getClickedBlock().getType();

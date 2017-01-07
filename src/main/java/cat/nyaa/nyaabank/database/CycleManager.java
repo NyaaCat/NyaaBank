@@ -49,6 +49,15 @@ public class CycleManager {
         }
     }
 
+    public long getNextCheckpoint() {
+        long len = plugin.cfg.interestCycle;
+        long offset = plugin.cfg.interestCycleOffset;
+        long now = System.currentTimeMillis() - offset;
+        long idxB = Math.floorDiv(now, len);
+        long idxC = idxB + 1;
+        return idxC * len + offset;
+    }
+
     /**
      * 1. check any missed check points
      * 2. setup timer to next check point
