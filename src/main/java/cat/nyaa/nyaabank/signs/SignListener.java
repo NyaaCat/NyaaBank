@@ -63,7 +63,7 @@ public class SignListener implements Listener{
                         p.sendMessage(I18n._("user.sign.use_no_permission"));
                         break;
                     }
-                    p.sendMessage(I18n._("user.sign.input_prompt_deposit", 7));
+                    p.sendMessage(I18n._("user.sign.input_prompt_deposit", plugin.cfg.signTimeout));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
@@ -83,7 +83,7 @@ public class SignListener implements Listener{
                         p.sendMessage(I18n._("user.sign.use_no_permission"));
                         break;
                     }
-                    p.sendMessage(I18n._("user.sign.input_prompt_withdraw", 7));
+                    p.sendMessage(I18n._("user.sign.input_prompt_withdraw", plugin.cfg.signTimeout));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
@@ -102,7 +102,7 @@ public class SignListener implements Listener{
                         p.sendMessage(I18n._("user.sign.use_no_permission"));
                         break;
                     }
-                    p.sendMessage(I18n._("user.sign.input_prompt_loan", 7));
+                    p.sendMessage(I18n._("user.sign.input_prompt_loan", plugin.cfg.signTimeout));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
@@ -122,7 +122,7 @@ public class SignListener implements Listener{
                         p.sendMessage(I18n._("user.sign.use_no_permission"));
                         break;
                     }
-                    p.sendMessage(I18n._("user.sign.input_prompt_repay", 7));
+                    p.sendMessage(I18n._("user.sign.input_prompt_repay", plugin.cfg.signTimeout));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override

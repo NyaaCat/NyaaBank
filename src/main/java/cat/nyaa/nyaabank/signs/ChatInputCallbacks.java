@@ -94,7 +94,7 @@ class ChatInputCallbacks {
     public void register(UUID player, InputCallback callback) {
         callbacks.put(player, callback);
         InputTimeoutTimer timer = new InputTimeoutTimer(player);
-        timer.runTaskLater(plugin, 7*20); // TODO configurable delay
+        timer.runTaskLater(plugin, plugin.cfg.signTimeout*20);
         timers.put(player, timer);
         if (listener == null) {
             listener = new InputListener();

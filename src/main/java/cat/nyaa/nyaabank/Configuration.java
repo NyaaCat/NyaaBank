@@ -34,6 +34,8 @@ public class Configuration extends PluginConfigure {
     public String signColorActive = "§l§a";
     @Serializable(name = "sign.color_bankrupt")
     public String signColorBankrupt = "§l§c";
+    @Serializable(name = "sign.timeout")
+    public long signTimeout = 7; // seconds
 
     /* Data stored in config file. Do not edit these entries manually */
     @Serializable(name = "data.last_check_point")
