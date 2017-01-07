@@ -139,8 +139,8 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         if (args.top() == null) throw new BadCommandException();
         String type = args.next().toLowerCase();
         if (args.top() == null) throw new BadCommandException();
-        String id = args.next();
         if ("player".equals(type)) {
+            String id = args.next();
             OfflinePlayer p = plugin.getServer().getOfflinePlayer(id);
             if (p == null || p.getUniqueId() == null) {
                 throw new BadCommandException("command.bankrupt.player_not_found");
@@ -205,7 +205,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
              * STEP 3: Clear vault and balance with banker
              * STEP 4: Update signs
              */
-            BankRegistration bank = plugin.dbm.getUniqueBank(id);
+            BankRegistration bank = plugin.dbm.getBankByIdNumber(args.nextInt());
             if (bank == null) throw new BadCommandException("command.bankrupt.bank_not_found");
 
             // STEP 1 & 2
@@ -268,10 +268,9 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
     public void commandDeposit(CommandSender sender, Arguments args) {
         Player p = asPlayer(sender);
         Double amount = args.nextDouble();
-        String partialBankId = args.next();
         if (amount <= 0) throw new BadCommandException("user.deposit.invalid_amount");
         if (!plugin.eco.has(p, amount)) throw new BadCommandException("user.deposit.not_enough_money");
-        BankRegistration bank = plugin.dbm.getUniqueBank(partialBankId);
+        BankRegistration bank = plugin.dbm.getBankByIdNumber(args.nextInt());
         if (bank == null) throw new BadCommandException("user.deposit.bank_not_found");
 
         try {
@@ -296,9 +295,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
             withdrawAll = false;
             amount = args.nextDouble();
         }
-        String bankIdP = args.next();
-        if (bankIdP == null) throw new BadCommandException();
-        BankRegistration bank = plugin.dbm.getUniqueBank(bankIdP);
+        BankRegistration bank = plugin.dbm.getBankByIdNumber(args.nextInt());
         if (bank == null) throw new BadCommandException("user.withdraw.bank_not_found");
 
         try {
@@ -312,10 +309,8 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
     public void commandLoan(CommandSender sender, Arguments args) {
         Player p = asPlayer(sender);
         double amount = args.nextDouble();
-        String partialId = args.next();
         if (amount <= 0) throw new BadCommandException("user.loan.invalid_amount");
-        if (partialId == null) throw new BadCommandException();
-        BankRegistration bank = plugin.dbm.getUniqueBank(partialId);
+        BankRegistration bank = plugin.dbm.getBankByIdNumber(args.nextInt());
         if (bank == null) throw new BadCommandException("user.loan.bank_not_found");
 
         try {
@@ -340,9 +335,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
             repayAll = false;
             amount = args.nextDouble();
         }
-        String bankIdP = args.next();
-        if (bankIdP == null) throw new BadCommandException();
-        BankRegistration bank = plugin.dbm.getUniqueBank(bankIdP);
+        BankRegistration bank = plugin.dbm.getBankByIdNumber(args.nextInt());
         if (bank == null) throw new BadCommandException("user.repay.bank_not_found");
 
         try {

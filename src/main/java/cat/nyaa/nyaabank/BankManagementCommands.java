@@ -38,15 +38,15 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
      * Get unique bank considering sender's permission
      * If sender is not player, ownership check is skipped
      * @param sender who invoked the command
-     * @param partialId partial bank id
+     * @param idNumber bank idNumber
      * @param noBankLang language key to be print when no bank is found
      * @param adminPermission permission required to skip the ownership check
      * @param permissionLang language key for wrong ownership
      * @return the bank
      */
-    private BankRegistration getBankWithPermission(CommandSender sender, String partialId, String noBankLang,
+    private BankRegistration getBankWithPermission(CommandSender sender, long idNumber, String noBankLang,
                                                    String adminPermission, String permissionLang) {
-        BankRegistration bank = plugin.dbm.getUniqueBank(partialId);
+        BankRegistration bank = plugin.dbm.getBankByIdNumber(idNumber);
         if (bank == null) throw new BadCommandException(noBankLang);
         if (sender instanceof Player) {
             if (!((Player) sender).getUniqueId().equals(bank.ownerId)) {
@@ -104,7 +104,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
     @SubCommand(value = "info", permission = "nb.bank_info")
     public void bankInfo(CommandSender sender, Arguments args) {
         if (args.top() == null) throw new BadCommandException();
-        BankRegistration bank = getBankWithPermission(sender, args.next(),
+        BankRegistration bank = getBankWithPermission(sender, args.nextInt(),
                 "command.bank_info.no_such_bank",
                 "nb.bank_info_admin",
                 "command.bank_info.only_self");
@@ -134,11 +134,10 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
 
     @SubCommand(value = "interest", permission = "nb.bank_interest")
     public void changeInterestInfo(CommandSender sender, Arguments args) {
-        String bankId = args.next();
+        int idNumber = args.nextInt();
         String op = args.next();  // OPERATION: SAVING/LOAN/TYPE
-        if (bankId == null || op == null) throw new BadCommandException();
 
-        BankRegistration bank = getBankWithPermission(sender, bankId, "command.bank_interest.no_such_bank",
+        BankRegistration bank = getBankWithPermission(sender, idNumber, "command.bank_interest.no_such_bank",
                 "nb.bank_interest_admin", "command.bank_interest.only_self");
 
         op = op.toUpperCase();
@@ -190,10 +189,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
 
     @SubCommand(value = "customers", permission = "nb.bank_customers")
     public void listCustomers(CommandSender sender, Arguments args) {
-        String bankId = args.next();
-        if (bankId == null || "".equals(bankId)) throw new BadCommandException();
-
-        BankRegistration bank = getBankWithPermission(sender, bankId, "command.bank_customers.no_such_bank",
+        BankRegistration bank = getBankWithPermission(sender, args.nextInt(), "command.bank_customers.no_such_bank",
                 "nb.bank_customers_admin", "command.bank_customers.only_self");
 
         Map<UUID, BankAccount> accounts = new HashMap<>();
@@ -239,9 +235,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
     public void depositVault(CommandSender sender, Arguments args) {
         Player p = asPlayer(sender);
         double capital = args.nextDouble();
-        String partialId = args.next();
-        if (partialId == null) throw new BadCommandException();
-        BankRegistration bank = getBankWithPermission(sender, partialId, "command.bank_vault.no_such_bank",
+        BankRegistration bank = getBankWithPermission(sender, args.nextInt(), "command.bank_vault.no_such_bank",
                 "nb.bank_vault_admin", "command.bank_vault.only_self");
         if (capital > 0) {  // move from player to bank vault
             if (!plugin.eco.has(p, capital)) throw new BadCommandException("command.bank_vault.player_insufficient");
