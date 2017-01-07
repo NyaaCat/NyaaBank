@@ -110,9 +110,9 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
                 "nb.bank_info.only_self");
 
         String ownerName = "UNKNOWN";
-        if (Bukkit.getPlayer(bank.ownerId) != null) {
-            if (Bukkit.getPlayer(bank.ownerId).getName() != null) {
-                ownerName = Bukkit.getPlayer(bank.ownerId).getName();
+        if (Bukkit.getOfflinePlayer(bank.ownerId) != null) {
+            if (Bukkit.getOfflinePlayer(bank.ownerId).getName() != null) {
+                ownerName = Bukkit.getOfflinePlayer(bank.ownerId).getName();
             }
         }
         msg(sender, "command.bank_info.info",
