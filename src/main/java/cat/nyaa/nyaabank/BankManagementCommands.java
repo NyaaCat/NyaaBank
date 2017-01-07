@@ -105,9 +105,9 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
     public void bankInfo(CommandSender sender, Arguments args) {
         if (args.top() == null) throw new BadCommandException();
         BankRegistration bank = getBankWithPermission(sender, args.next(),
-                "nb.bank_info.no_such_bank",
+                "command.bank_info.no_such_bank",
                 "nb.bank_info_admin",
-                "nb.bank_info.only_self");
+                "command.bank_info.only_self");
 
         String ownerName = "UNKNOWN";
         if (Bukkit.getOfflinePlayer(bank.ownerId) != null) {
@@ -138,8 +138,8 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         String op = args.next();  // OPERATION: SAVING/LOAN/TYPE
         if (bankId == null || op == null) throw new BadCommandException();
 
-        BankRegistration bank = getBankWithPermission(sender, bankId, "nb.bank_interest.no_such_bank",
-                "nb.bank_interest_admin", "nb.bank_interest.only_self");
+        BankRegistration bank = getBankWithPermission(sender, bankId, "command.bank_interest.no_such_bank",
+                "nb.bank_interest_admin", "command.bank_interest.only_self");
 
         op = op.toUpperCase();
         switch (op) {
@@ -148,7 +148,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
                 if (plugin.cfg.savingInterestLimitEnabled) {
                     if (plugin.cfg.savingInterestLimitMax < newSaving ||
                             plugin.cfg.savingInterestLimitMin > newSaving) {
-                        throw new BadCommandException("nb.bank_interest.rate_out_of_range",
+                        throw new BadCommandException("command.bank_interest.rate_out_of_range",
                                 plugin.cfg.savingInterestLimitMin,
                                 plugin.cfg.savingInterestLimitMax);
                     }
@@ -164,7 +164,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
                 if (plugin.cfg.debitInterestLimitEnabled) {
                     if (plugin.cfg.debitInterestLimitMax < newLoan ||
                             plugin.cfg.debitInterestLimitMin > newLoan) {
-                        throw new BadCommandException("nb.bank_interest.rate_out_of_range",
+                        throw new BadCommandException("command.bank_interest.rate_out_of_range",
                                 plugin.cfg.debitInterestLimitMin,
                                 plugin.cfg.debitInterestLimitMax);
                     }
@@ -193,8 +193,8 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         String bankId = args.next();
         if (bankId == null || "".equals(bankId)) throw new BadCommandException();
 
-        BankRegistration bank = getBankWithPermission(sender, bankId, "nb.bank_customers.no_such_bank",
-                "nb.bank_customers_admin", "nb.bank_customers.only_self");
+        BankRegistration bank = getBankWithPermission(sender, bankId, "command.bank_customers.no_such_bank",
+                "nb.bank_customers_admin", "command.bank_customers.only_self");
 
         Map<UUID, BankAccount> accounts = new HashMap<>();
         Multimap<UUID, PartialRecord> partials = HashMultimap.create();
@@ -242,7 +242,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         String partialId = args.next();
         if (partialId == null) throw new BadCommandException();
         BankRegistration bank = getBankWithPermission(sender, partialId, "command.bank_vault.no_such_bank",
-                "nb.bank_vault_admin", "nb.bank_vault.only_self");
+                "nb.bank_vault_admin", "command.bank_vault.only_self");
         if (capital > 0) {  // move from player to bank vault
             if (!plugin.eco.has(p, capital)) throw new BadCommandException("command.bank_vault.player_insufficient");
             bank.capital += capital;
