@@ -39,6 +39,9 @@ permission:
       nb.bank_customers: true
       nb.bank_vault: true
 
+      nb.sign_create: true
+      nb.sign_break: true
+
   nb.admin:
     description: Permissions for the god
     default: op
@@ -50,6 +53,8 @@ permission:
       nb.bank_vault_admin: true
 
       nb.list_my_admin: true
+      nb.sign_create_admin: true
+      nb.sign_break_admin: true
 
       nb.create_bank: true
       nb.force_bankrupt: true

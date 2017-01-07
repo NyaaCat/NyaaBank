@@ -14,6 +14,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -33,7 +34,6 @@ public class SignListener implements Listener{
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRightClickSign(PlayerInteractEvent ev) {
         // TODO log
-        // TODO permission
         if (!ev.hasBlock()) return;
         if (ev.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         Material blockType = ev.getClickedBlock().getType();
@@ -59,6 +59,10 @@ public class SignListener implements Listener{
             }
             switch (sr.type) {
                 case DEPOSIT:
+                    if (!p.hasPermission("nb.deposit")) {
+                        p.sendMessage(I18n._("user.sign.use_no_permission"));
+                        break;
+                    }
                     p.sendMessage(I18n._("user.sign.input_prompt_deposit", 7));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
@@ -75,6 +79,10 @@ public class SignListener implements Listener{
                             });
                     break;
                 case WITHDRAW:
+                    if (!p.hasPermission("nb.withdraw")) {
+                        p.sendMessage(I18n._("user.sign.use_no_permission"));
+                        break;
+                    }
                     p.sendMessage(I18n._("user.sign.input_prompt_withdraw", 7));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
@@ -90,6 +98,10 @@ public class SignListener implements Listener{
                             });
                     break;
                 case LOAN:
+                    if (!p.hasPermission("nb.loan")) {
+                        p.sendMessage(I18n._("user.sign.use_no_permission"));
+                        break;
+                    }
                     p.sendMessage(I18n._("user.sign.input_prompt_loan", 7));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
@@ -106,6 +118,10 @@ public class SignListener implements Listener{
                             });
                     break;
                 case REPAY:
+                    if (!p.hasPermission("nb.repay")) {
+                        p.sendMessage(I18n._("user.sign.use_no_permission"));
+                        break;
+                    }
                     p.sendMessage(I18n._("user.sign.input_prompt_repay", 7));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
@@ -122,26 +138,34 @@ public class SignListener implements Listener{
                     break;
                 default:
                     p.sendMessage(I18n._("user.sign.invalid_sign"));
-                    return;
+                    return; // do not update if an invalid sign
             }
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    SignHelper.updateSignBlock(plugin, ev.getClickedBlock().getLocation(), sr);
+                }
+            }.runTaskLater(plugin, 1L); // update block after click;
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onPlayerCreateSign(SignChangeEvent ev) {
-        // TODO permission
+        if (!ev.getPlayer().hasPermission("nb.sign_create")) return;
         SignRegistration sr = SignHelper.getSign(plugin, ev.getBlock().getLocation());
         boolean newSign = false;
         if (sr == null) newSign = true;
         sr = SignHelper.parseSign(plugin, ev.getLines(), sr, ev.getBlock().getLocation());
         if (sr == null) {
-            ev.getPlayer().sendMessage(I18n._("user.sign.create_fail"));
+            // ev.getPlayer().sendMessage(I18n._("user.sign.create_fail"));
             return;
         }
-        BankRegistration bank = plugin.dbm.getUniqueBank(sr.getBankId());
-        if (bank == null || !ev.getPlayer().getUniqueId().equals(bank.ownerId)) {
-            ev.getPlayer().sendMessage(I18n._("user.sign.create_fail"));
-            return;
+        if (!ev.getPlayer().hasPermission("nb.sign_create_admin")) { // skip bank owner check for admins
+            BankRegistration bank = plugin.dbm.getUniqueBank(sr.getBankId());
+            if (bank == null || !ev.getPlayer().getUniqueId().equals(bank.ownerId)) {
+                ev.getPlayer().sendMessage(I18n._("user.sign.create_fail"));
+                return;
+            }
         }
         if (newSign) {
             plugin.dbm.query(SignRegistration.class).insert(sr);
@@ -160,5 +184,26 @@ public class SignListener implements Listener{
         }.runTaskLater(plugin, 1);
     }
 
-    //TODO sign break protect
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onPlayerBreakSign(BlockBreakEvent ev) {
+        Material m = ev.getBlock().getType();
+        if (m != Material.SIGN_POST && m != Material.WALL_SIGN) return;
+        SignRegistration sr = SignHelper.getSign(plugin, ev.getBlock().getLocation());
+        if (sr == null) return;
+        if (!ev.getPlayer().hasPermission("nb.sign_break")) {
+            ev.getPlayer().sendMessage(I18n._("user.sign.break_no_permission"));
+            ev.setCancelled(true);
+            return;
+        }
+        if (!ev.getPlayer().hasPermission("nb.sign_break_admin")) { // skip owner check for admin
+            BankRegistration bank = plugin.dbm.getUniqueBank(sr.getBankId());
+            if (bank != null && !ev.getPlayer().getUniqueId().equals(bank.ownerId)) {
+                ev.getPlayer().sendMessage(I18n._("user.sign.break_no_permission"));
+                ev.setCancelled(true);
+                return;
+            }
+        }
+        plugin.dbm.query(SignRegistration.class).whereEq("sign_id", sr.getSignId()).delete();
+        ev.getPlayer().sendMessage(I18n._("user.sign.break_success"));
+    }
 }

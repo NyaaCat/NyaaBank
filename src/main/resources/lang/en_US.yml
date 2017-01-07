@@ -78,6 +78,9 @@ user:
     create_success: "Bank sign created"
     create_fail: "Failed to setup bank sign"
     input_accepted: "Transaction accepted."
+    break_no_permission: "You cannot break this sign"
+    break_success: "You broke the bank sign"
+    use_no_permission: "You do not have permission to use this sign"
 
     text_saving: "Saving Service"
     text_withdraw: "Withdraw"

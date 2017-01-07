@@ -136,7 +136,7 @@ public class DatabaseManager extends SQLiteDatabase {
         try {
             return query(BankRegistration.class).whereEq("id_number", idNumber).selectUnique();
         } catch (RuntimeException ex) {
-            // TODO
+            // TODO ResultNotUniqueException
             if (ex.getMessage() != null && ex.getMessage().startsWith("SQL Selection")) {
                 return null;
             } else {
