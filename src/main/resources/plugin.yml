@@ -15,7 +15,7 @@ commands:
     permission-message: "You do not have the required permission: <permission>"
     usage: "/<command> [SubCommand...] [Arguments...] or /<command> help"
 
-permission:
+permissions:
   nb.command:
     description: Run bank command
     default: true
