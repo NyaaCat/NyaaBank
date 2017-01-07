@@ -6,6 +6,7 @@ import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
+import cat.nyaa.nyaabank.database.tables.TransactionLog;
 import cat.nyaa.utils.CommandReceiver;
 import cat.nyaa.utils.Internationalization;
 import cat.nyaa.utils.database.BaseDatabase;
@@ -17,6 +18,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.Instant;
 import java.util.*;
+
+import static cat.nyaa.nyaabank.database.enums.TransactionType.REPAY;
+import static cat.nyaa.nyaabank.database.enums.TransactionType.VAULT_CHANGE;
+import static cat.nyaa.nyaabank.database.enums.TransactionType.WITHDRAW;
 
 public class CommandHandler extends CommandReceiver<NyaaBank> {
     @Override
@@ -131,7 +136,6 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
 
     @SubCommand(value = "bankrupt", permission = "nb.force_bankrupt")
     public void forceBankrupt(CommandSender sender, Arguments args) {
-        // TODO log
         if (args.top() == null) throw new BadCommandException();
         String type = args.next().toLowerCase();
         if (args.top() == null) throw new BadCommandException();
@@ -157,9 +161,15 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                 if (r.type == TransactionType.LOAN) {
                     plugin.eco.withdrawPlayer(p, r.capital);
                     bank.capital += r.capital;
+                    plugin.dbm.log(REPAY).from(pid).to(bank.bankId).capital(r.capital)
+                            .extra("partialId", r.getTransactionId())
+                            .extra("bankrupt", "PLAYER").insert();
                 } else if (r.type == TransactionType.DEPOSIT) {
                     plugin.eco.depositPlayer(p, r.capital);
                     bank.capital -= r.capital;
+                    plugin.dbm.log(WITHDRAW).to(pid).from(bank.bankId).capital(r.capital)
+                            .extra("partialId", r.getTransactionId())
+                            .extra("bankrupt", "PLAYER").insert();
                 }
             }
             for (BankAccount r : accounts) {
@@ -172,8 +182,12 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                 bank.capital -= netDeposit;
                 if (netDeposit < 0) {
                     plugin.eco.withdrawPlayer(p, -netDeposit);
+                    plugin.dbm.log(REPAY).from(pid).to(bank.bankId).capital(-netDeposit)
+                            .extra("bankrupt", "PLAYER").insert();
                 } else {
                     plugin.eco.depositPlayer(p, netDeposit);
+                    plugin.dbm.log(WITHDRAW).to(pid).from(bank.bankId).capital(netDeposit)
+                            .extra("bankrupt", "PLAYER").insert();
                 }
             }
 
@@ -203,9 +217,15 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                 if (r.type == TransactionType.LOAN) {
                     bank.capital += r.capital;
                     plugin.eco.withdrawPlayer(plugin.getServer().getOfflinePlayer(r.playerId), r.capital);
+                    plugin.dbm.log(REPAY).from(r.playerId).to(bank.bankId).capital(r.capital)
+                            .extra("partialId", r.getTransactionId())
+                            .extra("bankrupt", "BANK").insert();
                 } else if (r.type == TransactionType.DEPOSIT) {
                     bank.capital -= r.capital;
                     plugin.eco.depositPlayer(plugin.getServer().getOfflinePlayer(r.playerId), r.capital);
+                    plugin.dbm.log(WITHDRAW).to(r.playerId).from(bank.bankId).capital(r.capital)
+                            .extra("partialId", r.getTransactionId())
+                            .extra("bankrupt", "BANK").insert();
                 }
             }
             for (BankAccount r : accounts) {
@@ -213,14 +233,20 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                 bank.capital -= netDeposit;
                 if (netDeposit < 0) {
                     plugin.eco.withdrawPlayer(plugin.getServer().getOfflinePlayer(r.playerId), -netDeposit);
+                    plugin.dbm.log(REPAY).from(r.playerId).to(bank.bankId).capital(-netDeposit)
+                            .extra("bankrupt", "BANK").insert();
                 } else {
                     plugin.eco.depositPlayer(plugin.getServer().getOfflinePlayer(r.playerId), netDeposit);
+                    plugin.dbm.log(WITHDRAW).to(r.playerId).from(bank.bankId).capital(netDeposit)
+                            .extra("bankrupt", "BANK").insert();
                 }
             }
             plugin.dbm.query(PartialRecord.class).whereEq("bank_id", bank.getBankId()).delete();
             plugin.dbm.query(BankAccount.class).whereEq("bank_id", bank.getBankId()).delete();
 
             // STEP 3
+            plugin.dbm.log(VAULT_CHANGE).from(bank.ownerId).to(bank.bankId).capital(-bank.capital)
+                    .extra("bankrupt", "BANK").insert();
             if (bank.capital >= 0) {
                 plugin.eco.depositPlayer(plugin.getServer().getOfflinePlayer(bank.ownerId), bank.capital);
             } else {

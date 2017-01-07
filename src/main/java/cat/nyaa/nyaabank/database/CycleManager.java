@@ -200,20 +200,22 @@ public class CycleManager {
                         account.deposit += partial.capital;
                         account.deposit_interest += deposit_interest;
                         plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
-                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString()).insert();
                         plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital)
-                                .extra("{\"partialId\": \"%s\", \"target\": \"DEPOSIT\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString())
+                                .extra("target", "DEPOSIT").insert();
                     } else if (partial.capital + deposit_interest > 0) { // negative interest i.e. money transferred from player to bank
                         account.deposit += partial.capital + deposit_interest;
                         plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
-                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString()).insert();
                         plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital + deposit_interest)
-                                .extra("{\"partialId\": \"%s\", \"target\": \"DEPOSIT\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString())
+                                .extra("target", "DEPOSIT").insert();
                     } else { // bank take all the money
                         bank.capital += partial.capital;
                         deposit_interest = 0;
                         plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(-partial.capital)
-                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString()).insert();
                     }
                     bank.capital -= deposit_interest;
                     break;
@@ -227,18 +229,20 @@ public class CycleManager {
                         account.loan += partial.capital;
                         account.loan_interest += loan_interest;
                         plugin.dbm.log(INTEREST_LOAN).from(partial.playerId).to(partial.bankId).capital(loan_interest)
-                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString()).insert();
                         plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital)
-                                .extra("{\"partialId\": \"%s\", \"target\": \"LOAN\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString())
+                                .extra("target", "LOAN").insert();
                     } else if (partial.capital + loan_interest > 0) { // negative interest i.e. money transferred from bank to player
                         account.loan += partial.capital + loan_interest;
                         plugin.dbm.log(INTEREST_LOAN).from(partial.playerId).to(partial.bankId).capital(loan_interest)
-                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString()).insert();
                         plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital + loan_interest)
-                                .extra("{\"partialId\": \"%s\", \"target\": \"LOAN\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString())
+                                .extra("target", "LOAN").insert();
                     } else {
                         plugin.dbm.log(INTEREST_LOAN).from(partial.playerId).to(partial.bankId).capital(-partial.capital)
-                                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString()).insert();
+                                .extra("partialId", partial.transactionId.toString()).insert();
                         // give you the money, nothing need to be done.
                     }
                     break;

@@ -36,7 +36,7 @@ public final class CommonAction {
                 .from(player.getUniqueId())
                 .to(bank.bankId)
                 .capital(amount)
-                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString())
+                .extra("partialId", partial.transactionId.toString())
                 .insert();
 
         bank.capital += amount;
@@ -152,7 +152,7 @@ public final class CommonAction {
                 .to(player.getUniqueId())
                 .from(bank.bankId)
                 .capital(amount)
-                .extra("{\"partialId\": \"%s\"}", partial.transactionId.toString())
+                .extra("partialId", partial.transactionId.toString())
                 .insert();
     }
 

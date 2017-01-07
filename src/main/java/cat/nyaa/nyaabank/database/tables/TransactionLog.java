@@ -8,6 +8,8 @@ import cat.nyaa.utils.database.DataTable;
 import cat.nyaa.utils.database.PrimaryKey;
 
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 @DataTable("transaction_log")
@@ -127,8 +129,12 @@ public class TransactionLog {
         return this;
     }
 
-    public TransactionLog extra(String template, Object... objs) {
-        this.extra = String.format(template, objs);
+    private Map<String, String> extraMap = null;
+
+    // TODO extra document
+    public TransactionLog extra(String key, String value) {
+        if (extraMap == null) extraMap = new HashMap<>();
+        extraMap.put(key, value);
         return this;
     }
 
@@ -136,6 +142,14 @@ public class TransactionLog {
         if (dbm == null) throw new IllegalStateException("assert(dbm != null)");
         time = Instant.now();
         id = null;
+        extra = "";
+        if (extraMap != null) {
+            for (String key : extraMap.keySet()) {
+                if (extra.length() > 0) extra += ", ";
+                extra += String.format("\"%s\": \"%s\"", key, extraMap.get(key));
+            }
+        }
+        extra = "{" + extra + "}";
         dbm.query(TransactionLog.class).insert(this);
     }
 }
