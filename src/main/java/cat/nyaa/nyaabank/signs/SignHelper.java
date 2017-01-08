@@ -10,6 +10,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.List;
 import java.util.UUID;
@@ -147,5 +148,36 @@ public final class SignHelper {
                 return null;
         }
         return signReg;
+    }
+
+    /**
+     * Update all signs in the given list.
+     * One sign per tick, so it may take several ticks to complete the request
+     */
+    public static void batchUpdateSign(NyaaBank plugin, List<SignRegistration> signList) {
+        if (signList == null || signList.size() == 0) return;
+        new BukkitRunnable() {
+            int idx = 0;
+            @Override
+            public void run() {
+                SignRegistration sr = signList.get(idx);
+                try {
+                    updateSignBlock(plugin, sr.location, sr);
+                } catch (IllegalArgumentException ex) { // remove invalid sign registrations
+                    plugin.dbm.query(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).delete();
+                    ex.printStackTrace();
+                }
+                idx++;
+                if (idx >= signList.size()) this.cancel();
+            }
+        }.runTaskTimer(plugin, 1L, 1L);
+    }
+
+    /**
+     * Update all signs of the given bank
+     */
+    public static void batchUpdateSign(NyaaBank plugin, BankRegistration bank) {
+        batchUpdateSign(plugin, plugin.dbm.query(SignRegistration.class)
+                .whereEq(SignRegistration.N_BANK_ID, bank.getBankId()).select());
     }
 }

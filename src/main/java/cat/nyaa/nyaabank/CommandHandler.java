@@ -6,6 +6,7 @@ import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
+import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import cat.nyaa.nyaabank.signs.SignHelper;
 import cat.nyaa.utils.CommandReceiver;
 import cat.nyaa.utils.Internationalization;
@@ -261,7 +262,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
             plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank);
 
             // STEP 4
-            // TODO update signs
+            SignHelper.batchUpdateSign(plugin, bank);
 
         } else {
             throw new BadCommandException();
@@ -363,6 +364,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
     @SubCommand(value = "_check", permission = "nb.debug") // for debug only
     public void forceCheckPoint(CommandSender sender, Arguments args) {
         plugin.cycle.updateDatabaseInterests(plugin.cycle.getNextCheckpoint(), plugin.cfg.interestCycle);
+        SignHelper.batchUpdateSign(plugin, plugin.dbm.query(SignRegistration.class).select());
     }
 
     @SubCommand(value = "_benchmark", permission = "nb.debug") // for debug only
@@ -427,5 +429,8 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         plugin.cycle.updateDatabaseInterests(System.currentTimeMillis(), plugin.cfg.interestCycle);
         endTime = System.currentTimeMillis();
         sender.sendMessage(String.format("Finished in %.2fs", (endTime - startTime) / 1000D));
+        plugin.dbm.query(BankRegistration.class).delete();
+        plugin.dbm.query(PartialRecord.class).delete();
+        plugin.dbm.query(BankAccount.class).delete();
     }
 }

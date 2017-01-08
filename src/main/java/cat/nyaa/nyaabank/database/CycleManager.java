@@ -5,9 +5,12 @@ import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
+import cat.nyaa.nyaabank.database.tables.SignRegistration;
+import cat.nyaa.nyaabank.signs.SignHelper;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -46,7 +49,9 @@ public class CycleManager {
             long nextCheckpoint = idxC * len + offset + 1;
             long delay = nextCheckpoint - now;
             new CheckPointTask(delay);
-            // TODO update signs for changed interest rate
+
+            SignHelper.batchUpdateSign(plugin, plugin.dbm.query(SignRegistration.class).select());
+            // TODO we may not need to update all signs
         }
     }
 
