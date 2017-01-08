@@ -43,32 +43,32 @@ class ChatInputCallbacks {
     }
 
     class InputListener implements Listener {
-        @EventHandler(priority = EventPriority.LOWEST)
+        @EventHandler(priority = EventPriority.HIGHEST)
         public void onPlayerInput(PlayerChatEvent ev) {
             UUID playerId = ev.getPlayer().getUniqueId();
-            if (callbacks.containsKey(playerId)) {
-                String msg = ev.getMessage();
-                if ("ALL".equalsIgnoreCase(msg) || "CONFIRM".equalsIgnoreCase(msg)) {
-                    callbacks.get(playerId).onDoubleInput(ev.getPlayer(), -1, true);
-                } else {
-                    Double number = null;
-                    try {
-                        number = Double.parseDouble(msg);
-                        if (Double.isInfinite(number) || Double.isNaN(number))
-                            number = null;
-                    } catch (NumberFormatException ex) {
-                        number = null;
-                    }
-                    if (number == null) {
-                        ev.getPlayer().sendMessage(I18n._("user.sign.invalid_number"));
-                    } else {
-                        callbacks.get(playerId).onDoubleInput(ev.getPlayer(), number, false);
-                    }
-                }
-                ev.setCancelled(true);
+            if (!callbacks.containsKey(playerId)) return;
+
+
+            ev.setCancelled(true);
+            String msg = ev.getMessage();
+            if ("ALL".equalsIgnoreCase(msg) || "CONFIRM".equalsIgnoreCase(msg)) {
+                callbacks.get(playerId).onDoubleInput(ev.getPlayer(), -1, true);
             } else {
-                return;
+                Double number = null;
+                try {
+                    number = Double.parseDouble(msg);
+                    if (Double.isInfinite(number) || Double.isNaN(number))
+                        number = null;
+                } catch (NumberFormatException ex) {
+                    number = null;
+                }
+                if (number == null) {
+                    ev.getPlayer().sendMessage(I18n._("user.sign.invalid_number"));
+                } else {
+                    callbacks.get(playerId).onDoubleInput(ev.getPlayer(), number, false);
+                }
             }
+
             if (timers.containsKey(playerId)) {
                 timers.get(playerId).cancel();
             }
