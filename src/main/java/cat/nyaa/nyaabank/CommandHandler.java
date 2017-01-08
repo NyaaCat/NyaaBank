@@ -108,9 +108,9 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         }
         if (pid == null) pid = asPlayer(sender).getUniqueId();
         List<BankAccount> accounts = plugin.dbm.query(BankAccount.class)
-                .whereEq("player_id", pid.toString()).select();
+                .whereEq(BankAccount.N_PLAYER_ID, pid.toString()).select();
         List<PartialRecord> partials = plugin.dbm.query(PartialRecord.class)
-                .whereEq("player_id", pid.toString()).select();
+                .whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).select();
 
         Map<UUID, Double> deposit = new HashMap<>();
         Map<UUID, Double> loan = new HashMap<>();
@@ -152,9 +152,9 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
             }
             UUID pid = p.getUniqueId();
             List<PartialRecord> partials = plugin.dbm.query(PartialRecord.class)
-                    .whereEq("player_id", pid.toString()).select();
+                    .whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).select();
             List<BankAccount> accounts = plugin.dbm.query(BankAccount.class)
-                    .whereEq("player_id", pid.toString()).select();
+                    .whereEq(BankAccount.N_PLAYER_ID, pid.toString()).select();
 
             Map<UUID, BankRegistration> updatedBanks = new HashMap<>();
             for (PartialRecord r : partials) {
@@ -196,12 +196,12 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                 }
             }
 
-            plugin.dbm.query(PartialRecord.class).whereEq("player_id", pid.toString()).delete();
-            plugin.dbm.query(BankAccount.class).whereEq("player_id", pid.toString()).delete();
+            plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).delete();
+            plugin.dbm.query(BankAccount.class).whereEq(BankAccount.N_PLAYER_ID, pid.toString()).delete();
             for (BankRegistration b : updatedBanks.values()) {
                 plugin.dbm.query(BankRegistration.class)
-                        .whereEq("bank_id", b.getBankId())
-                        .update(b, "capital");
+                        .whereEq(BankRegistration.N_BANK_ID, b.getBankId())
+                        .update(b, BankRegistration.N_CAPITAL);
             }
         } else if ("bank".equals(type)) {
             // TODO make other codes check bankrupt state
@@ -215,9 +215,9 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
 
             // STEP 1 & 2
             List<PartialRecord> partials = plugin.dbm.query(PartialRecord.class)
-                    .whereEq("bank_id", bank.getBankId()).select();
+                    .whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).select();
             List<BankAccount> accounts = plugin.dbm.query(BankAccount.class)
-                    .whereEq("bank_id", bank.getBankId()).select();
+                    .whereEq(BankAccount.N_BANK_ID, bank.getBankId()).select();
             for (PartialRecord r : partials) {
                 if (r.type == TransactionType.LOAN) {
                     bank.capital += r.capital;
@@ -246,8 +246,8 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                             .extra("bankrupt", "BANK").insert();
                 }
             }
-            plugin.dbm.query(PartialRecord.class).whereEq("bank_id", bank.getBankId()).delete();
-            plugin.dbm.query(BankAccount.class).whereEq("bank_id", bank.getBankId()).delete();
+            plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).delete();
+            plugin.dbm.query(BankAccount.class).whereEq(BankAccount.N_BANK_ID, bank.getBankId()).delete();
 
             // STEP 3
             plugin.dbm.log(VAULT_CHANGE).from(bank.ownerId).to(bank.bankId).capital(-bank.capital)
@@ -259,7 +259,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
             }
             bank.capital = 0D;
             bank.status = BankStatus.BANKRUPT;
-            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.getBankId()).update(bank);
+            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank);
 
             // STEP 4
             // TODO update signs

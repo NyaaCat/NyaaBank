@@ -49,7 +49,7 @@ public class DatabaseManager extends SQLiteDatabase {
     public BankRegistration getUniqueBank(String partialUUID) {
         if (partialUUID == null || "".equals(partialUUID)) return null;
         List<BankRegistration> r = query(BankRegistration.class)
-                .where("bank_id", " LIKE ", "%" + partialUUID + "%")
+                .where(BankRegistration.N_BANK_ID, " LIKE ", "%" + partialUUID + "%")
                 .select();
         if (r.size() > 1 || r.size() <= 0) return null;
         return r.get(0);
@@ -62,8 +62,8 @@ public class DatabaseManager extends SQLiteDatabase {
     public BankAccount getAccount(UUID bankId, UUID playerId) {
         BankAccount account = null;
         List<BankAccount> l = query(BankAccount.class)
-                .whereEq("bank_id", bankId.toString())
-                .whereEq("player_id", playerId.toString())
+                .whereEq(BankAccount.N_BANK_ID, bankId.toString())
+                .whereEq(BankAccount.N_PLAYER_ID, playerId.toString())
                 .select();
         if (l.size() > 0) {
             if (l.size() > 1) {
@@ -77,9 +77,9 @@ public class DatabaseManager extends SQLiteDatabase {
 
     public List<PartialRecord> getPartialRecords(UUID bankId, UUID playerId, TransactionType type) {
         return query(PartialRecord.class)
-                .whereEq("bank_id", bankId.toString())
-                .whereEq("player_id", playerId.toString())
-                .whereEq("transaction_type", type.name())
+                .whereEq(PartialRecord.N_BANK_ID, bankId.toString())
+                .whereEq(PartialRecord.N_PLAYER_ID, playerId.toString())
+                .whereEq(PartialRecord.N_TRANSACTION_TYPE, type.name())
                 .select();
     }
 
@@ -134,7 +134,7 @@ public class DatabaseManager extends SQLiteDatabase {
 
     public BankRegistration getBankByIdNumber(long idNumber) {
         try {
-            return query(BankRegistration.class).whereEq("id_number", idNumber).selectUnique();
+            return query(BankRegistration.class).whereEq(BankRegistration.N_ID_NUMBER, idNumber).selectUnique();
         } catch (RuntimeException ex) {
             // TODO ResultNotUniqueException
             if (ex.getMessage() != null && ex.getMessage().startsWith("SQL Selection")) {

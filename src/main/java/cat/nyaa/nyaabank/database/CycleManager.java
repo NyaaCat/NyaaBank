@@ -268,12 +268,12 @@ public class CycleManager {
         // write to database
         DatabaseManager.Query<BankRegistration> query1 = plugin.dbm.query(BankRegistration.class);
         for (BankRegistration bank : bankMap.values()) {
-            query1.clear().whereEq("bank_id", bank.bankId.toString()).update(bank);
+            query1.clear().whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString()).update(bank);
         }
         DatabaseManager.Query<BankAccount> query2 = plugin.dbm.query(BankAccount.class);
         for (Map<UUID, BankAccount> m : accountMap.values()) {
             for (BankAccount account : m.values()) {
-                query2.clear().whereEq("account_id", account.accountId.toString()).update(account);
+                query2.clear().whereEq(BankAccount.N_ACCOUNT_ID, account.accountId.toString()).update(account);
             }
         }
         plugin.dbm.query(PartialRecord.class).delete();

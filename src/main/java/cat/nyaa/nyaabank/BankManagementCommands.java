@@ -69,7 +69,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
             } else {
                 UUID id = plugin.getServer().getOfflinePlayer(playerName).getUniqueId();
                 banks = plugin.dbm.query(BankRegistration.class)
-                        .whereEq("owner_id", id.toString())
+                        .whereEq(BankRegistration.N_OWNER_ID, id.toString())
                         .select();
                 msg(sender, "command.bank_list.list_player", playerName);
             }
@@ -85,7 +85,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         } else {   // players
             Player p = asPlayer(sender);
             List<BankRegistration> banks = plugin.dbm.query(BankRegistration.class)
-                    .whereEq("owner_id", p.getUniqueId().toString())
+                    .whereEq(BankRegistration.N_OWNER_ID, p.getUniqueId().toString())
                     .select();
 
             msg(sender, "command.bank_list.list_player", p.getName());
@@ -154,8 +154,8 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
                 }
                 bank.savingInterestNext = newSaving;
                 plugin.dbm.query(BankRegistration.class)
-                        .whereEq("bank_id", bank.bankId.toString())
-                        .update(bank, "interest_rate_saving_next");
+                        .whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
+                        .update(bank, BankRegistration.N_INTEREST_RATE_SAVING_NEXT);
                 break;
             }
             case "LOAN": {
@@ -170,16 +170,16 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
                 }
                 bank.debitInterestNext = newLoan;
                 plugin.dbm.query(BankRegistration.class)
-                        .whereEq("bank_id", bank.bankId.toString())
-                        .update(bank, "interest_rate_debit_next");
+                        .whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
+                        .update(bank, BankRegistration.N_INTEREST_RATE_DEBIT_NEXT);
                 break;
             }
             case "TYPE": {
                 InterestType newType = args.nextEnum(InterestType.class);
                 bank.interestTypeNext = newType;
                 plugin.dbm.query(BankRegistration.class)
-                        .whereEq("bank_id", bank.bankId.toString())
-                        .update(bank, "interest_type_next");
+                        .whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
+                        .update(bank, BankRegistration.N_INTEREST_TYPE_NEXT);
                 break;
             }
             default:
@@ -195,7 +195,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         Map<UUID, BankAccount> accounts = new HashMap<>();
         Multimap<UUID, PartialRecord> partials = HashMultimap.create();
         for (BankAccount a : plugin.dbm.query(BankAccount.class)
-                .whereEq("bank_id", bank.bankId).select()) {
+                .whereEq(BankAccount.N_BANK_ID, bank.bankId).select()) {
             if (accounts.containsKey(a.playerId)) {
                 plugin.getLogger().severe(String.format("Multiple accounts bank-id=%s, player-id=%s",
                         bank.bankId.toString(), a.playerId));
@@ -203,7 +203,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
             accounts.put(a.playerId, a);
         }
         for (PartialRecord p : plugin.dbm.query(PartialRecord.class)
-                .whereEq("bank_id", bank.bankId).select()) {
+                .whereEq(PartialRecord.N_BANK_ID, bank.bankId).select()) {
             partials.put(p.playerId, p);
         }
 
@@ -240,14 +240,14 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         if (capital > 0) {  // move from player to bank vault
             if (!plugin.eco.has(p, capital)) throw new BadCommandException("command.bank_vault.player_insufficient");
             bank.capital += capital;
-            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.getBankId()).update(bank, "capital");
+            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank, BankRegistration.N_CAPITAL);
             plugin.dbm.log(TransactionType.VAULT_CHANGE).from(p.getUniqueId()).to(bank.bankId).capital(capital).insert();
             plugin.eco.withdrawPlayer(p, capital);
         } else if (capital < 0) { // move from vault to player account
             capital = -capital;
             if (capital > bank.capital) throw new BadCommandException("command.bank_vault.vault_insufficient");
             bank.capital -= capital;
-            plugin.dbm.query(BankRegistration.class).whereEq("bank_id", bank.getBankId()).update(bank, "capital");
+            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank, BankRegistration.N_CAPITAL);
             plugin.dbm.log(TransactionType.VAULT_CHANGE).from(p.getUniqueId()).to(bank.bankId).capital(-capital).insert();
             plugin.eco.depositPlayer(p, capital);
         }

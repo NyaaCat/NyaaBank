@@ -34,10 +34,10 @@ public final class SignHelper {
      */
     public static SignRegistration getSign(NyaaBank plugin, Location location) {
         List<SignRegistration> l = plugin.dbm.query(SignRegistration.class)
-                .whereEq("location_world_name", location.getWorld().getName())
-                .whereEq("location_x", location.getBlockX())
-                .whereEq("location_y", location.getBlockY())
-                .whereEq("location_z", location.getBlockZ())
+                .whereEq(SignRegistration.N_LOCATION_WORLD_NAME, location.getWorld().getName())
+                .whereEq(SignRegistration.N_LOCATION_X, location.getBlockX())
+                .whereEq(SignRegistration.N_LOCATION_Y, location.getBlockY())
+                .whereEq(SignRegistration.N_LOCATION_Z, location.getBlockZ())
                 .select();
         if (l.size() > 1 || l.size() <= 0) return null;
         return l.get(0);

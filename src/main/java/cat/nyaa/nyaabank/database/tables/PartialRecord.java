@@ -11,16 +11,23 @@ import java.util.UUID;
 /* New deposit or loan */
 @DataTable("partial_transactions")
 public class PartialRecord {
+    // Data column names
+    public static final String N_CAPITAL = "capital";
+    public static final String N_TRANSACTION_ID = "transaction_id";
+    public static final String N_BANK_ID = "bank_id";
+    public static final String N_PLAYER_ID = "player_id";
+    public static final String N_START_DATE = "start_date";
+    public static final String N_TRANSACTION_TYPE = "transaction_type";
 
     public UUID transactionId;
     public UUID bankId;
     public UUID playerId;
     public Instant startDate; // Stored as Unix timestamp ms
-    @DataColumn("capital")
+    @DataColumn(N_CAPITAL)
     public Double capital;
     public TransactionType type; // deposit or loan
 
-    @DataColumn("transaction_id")
+    @DataColumn(N_TRANSACTION_ID)
     @PrimaryKey
     public String getTransactionId() {
         return transactionId.toString();
@@ -30,7 +37,7 @@ public class PartialRecord {
         this.transactionId = UUID.fromString(transactionId);
     }
 
-    @DataColumn("bank_id")
+    @DataColumn(N_BANK_ID)
     public String getBankId() {
         return bankId.toString();
     }
@@ -39,7 +46,7 @@ public class PartialRecord {
         this.bankId = UUID.fromString(bankId);
     }
 
-    @DataColumn("player_id")
+    @DataColumn(N_PLAYER_ID)
     public String getPlayerId() {
         return playerId.toString();
     }
@@ -48,7 +55,7 @@ public class PartialRecord {
         this.playerId = UUID.fromString(playerId);
     }
 
-    @DataColumn("start_date")
+    @DataColumn(N_START_DATE)
     public Long getStartDate() {
         return startDate.toEpochMilli();
     }
@@ -57,7 +64,7 @@ public class PartialRecord {
         this.startDate = Instant.ofEpochMilli(startDate);
     }
 
-    @DataColumn("transaction_type")
+    @DataColumn(N_TRANSACTION_TYPE)
     public String getType() {
         return type.toString();
     }

@@ -169,7 +169,7 @@ public class SignListener implements Listener{
         if (newSign) {
             plugin.dbm.query(SignRegistration.class).insert(sr);
         } else {
-            plugin.dbm.query(SignRegistration.class).whereEq("sign_id", sr.getSignId()).update(sr);
+            plugin.dbm.query(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).update(sr);
         }
         ev.getPlayer().sendMessage(I18n._("user.sign.create_success"));
 
@@ -202,7 +202,7 @@ public class SignListener implements Listener{
                 return;
             }
         }
-        plugin.dbm.query(SignRegistration.class).whereEq("sign_id", sr.getSignId()).delete();
+        plugin.dbm.query(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).delete();
         ev.getPlayer().sendMessage(I18n._("user.sign.break_success"));
     }
 }

@@ -14,22 +14,33 @@ import java.util.UUID;
 
 @DataTable("transaction_log")
 public class TransactionLog {
+    // Data column names
+    public static final String N_ID = "id";
+    public static final String N_CAPITAL = "capital";
+    public static final String N_EXTRA = "extra";
+    public static final String N_TIME = "time";
+    public static final String N_FROM_ID = "from_id";
+    public static final String N_TO_ID = "to_id";
+    public static final String N_FROM_TYPE = "from_type";
+    public static final String N_TO_TYPE = "to_type";
+    public static final String N_TRANSACTION_TYPE = "transaction_type";
+
     @PrimaryKey
-    @DataColumn("id")
+    @DataColumn(N_ID)
     public Long id;
 
     public Instant time;
     public UUID from;
     public UUID to;
-    @DataColumn("capital")
+    @DataColumn(N_CAPITAL)
     public Double capital;
     public AccountType fromType;
     public AccountType toType;
     public TransactionType type;
-    @DataColumn("extra")
+    @DataColumn(N_EXTRA)
     public String extra;
 
-    @DataColumn("time")
+    @DataColumn(N_TIME)
     public String getTime() {
         return time.toString();
     }
@@ -38,7 +49,7 @@ public class TransactionLog {
         this.time = Instant.parse(time);
     }
 
-    @DataColumn("from_id")
+    @DataColumn(N_FROM_ID)
     public String getFrom() {
         return from.toString();
     }
@@ -47,7 +58,7 @@ public class TransactionLog {
         this.from = UUID.fromString(from);
     }
 
-    @DataColumn("to_id")
+    @DataColumn(N_TO_ID)
     public String getTo() {
         return to.toString();
     }
@@ -56,7 +67,7 @@ public class TransactionLog {
         this.to = UUID.fromString(to);
     }
 
-    @DataColumn("from_type")
+    @DataColumn(N_FROM_TYPE)
     public String getFromType() {
         return fromType.toString();
     }
@@ -65,7 +76,7 @@ public class TransactionLog {
         this.fromType = AccountType.valueOf(fromType);
     }
 
-    @DataColumn("to_type")
+    @DataColumn(N_TO_TYPE)
     public String getToType() {
         return toType.toString();
     }
@@ -74,7 +85,7 @@ public class TransactionLog {
         this.toType = AccountType.valueOf(toType);
     }
 
-    @DataColumn("transaction_type")
+    @DataColumn(N_TRANSACTION_TYPE)
     public String getType() {
         return type.toString();
     }
