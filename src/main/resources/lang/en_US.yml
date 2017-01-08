@@ -132,8 +132,8 @@ manual:
       usage: "/nb bank vault <amount> <bank-id>"
 
   reg:
-    description: "Register a bank"
-    usage: "/nb reg <playerName> <bankName> <bankCapital>"
+    description: "Register a bank, use hundred percent interest"
+    usage: "/nb reg <playerName> <bankName> <bankCapital> <savingInterest> <debitInterest> <SIMPLE|COMPOUND>"
 
   top:
     description: "List banks by capital"

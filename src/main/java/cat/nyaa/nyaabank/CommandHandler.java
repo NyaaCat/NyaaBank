@@ -6,7 +6,7 @@ import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
-import cat.nyaa.nyaabank.database.tables.TransactionLog;
+import cat.nyaa.nyaabank.signs.SignHelper;
 import cat.nyaa.utils.CommandReceiver;
 import cat.nyaa.utils.Internationalization;
 import cat.nyaa.utils.database.BaseDatabase;
@@ -44,16 +44,21 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         String playerName = args.next();
         String bankName = args.next();
         double capital = args.nextDouble();
+        double savingInter = args.nextDouble();
+        double debitInter = args.nextDouble();
+        InterestType interestType = args.nextEnum(InterestType.class);
 
         if (playerName == null || bankName == null || capital < 0) {
             throw new BadCommandException("manual.reg.usage");
         }
         bankName = ChatColor.translateAlternateColorCodes('&', bankName);
 
-        BaseDatabase.Query<BankRegistration> q = plugin.dbm.query(BankRegistration.class);
-        if (q.whereEq("bank_name", bankName).count() > 0) {
-            msg(sender, "command.reg.name_duplicate");
-            return;
+        List<BankRegistration> q = plugin.dbm.query(BankRegistration.class).select();
+        for (BankRegistration b : q) {
+            if (SignHelper.stringEqIgnoreColor(bankName, b.name, true)) {
+                msg(sender, "command.reg.name_duplicate");
+                return;
+            }
         }
 
         OfflinePlayer p = plugin.getServer().getPlayer(playerName);
@@ -75,13 +80,13 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
         reg.registered_capital = capital;
         reg.establishDate = Instant.now();
         reg.status = BankStatus.ACTIVE;
-        reg.interestType = InterestType.COMPOUND;
-        reg.interestTypeNext = reg.interestType;
-        reg.savingInterest = 0D;
-        reg.savingInterestNext = reg.savingInterest;
-        reg.debitInterest = 0D;
-        reg.debitInterestNext = reg.debitInterest;
-        q.insert(reg);
+        reg.interestType = interestType;
+        reg.interestTypeNext = interestType;
+        reg.savingInterest = savingInter;
+        reg.savingInterestNext = savingInter;
+        reg.debitInterest = debitInter;
+        reg.debitInterestNext = debitInter;
+        plugin.dbm.query(BankRegistration.class).insert(reg);
         msg(sender, "command.reg.established", reg.idNumber, reg.name, reg.bankId.toString());
     }
 
