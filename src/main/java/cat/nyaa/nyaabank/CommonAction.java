@@ -1,5 +1,6 @@
 package cat.nyaa.nyaabank;
 
+import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
@@ -22,6 +23,7 @@ public final class CommonAction {
         if (amount <= 0) throw new TransactionException("user.deposit.invalid_amount");
         if (!plugin.eco.has(player, amount)) throw new TransactionException("user.deposit.not_enough_money");
         if (bank == null) throw new TransactionException("user.deposit.bank_not_found");
+        if (bank.status == BankStatus.BANKRUPT) throw new TransactionException("user.deposit.bankrupted");
 
         plugin.eco.withdrawPlayer(player, amount);
         PartialRecord partial = new PartialRecord();
@@ -48,6 +50,7 @@ public final class CommonAction {
     public static void withdraw(NyaaBank plugin, Player player, BankRegistration bank,
                                 double amount, boolean withdrawAll) throws TransactionException {
         if (bank == null) throw new TransactionException("user.withdraw.bank_not_found");
+        if (bank.status == BankStatus.BANKRUPT) throw new TransactionException("user.withdraw.bankrupted");
         double totalDeposit = plugin.dbm.getTotalDeposit(bank.bankId, player.getUniqueId());
         if (withdrawAll) {
             if (totalDeposit >= bank.capital) throw new TransactionException("user.withdraw.bank_run");
@@ -125,6 +128,7 @@ public final class CommonAction {
                             double amount) throws TransactionException {
         if (amount <= 0) throw new TransactionException("user.loan.invalid_amount");
         if (bank == null) throw new TransactionException("user.loan.bank_not_found");
+        if (bank.status == BankStatus.BANKRUPT) throw new TransactionException("user.loan.bankrupted");
         if (bank.capital <= amount) throw new TransactionException("user.loan.not_enough_money_bank");
         BankAccount account = plugin.dbm.getAccount(bank.bankId, player.getUniqueId());
         if (account != null && (account.loan > 0 || account.loan_interest > 0)) {
@@ -159,6 +163,7 @@ public final class CommonAction {
     public static void repay(NyaaBank plugin, Player player, BankRegistration bank,
                              double amount, boolean repayAll) throws TransactionException {
         if (bank == null) throw new TransactionException("user.repay.bank_not_found");
+        if (bank.status == BankStatus.BANKRUPT) throw new TransactionException("user.repay.bankrupted");
 
         double totalLoan = plugin.dbm.getTotalLoan(bank.bankId, player.getUniqueId());
         if (repayAll) {

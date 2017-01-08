@@ -41,6 +41,7 @@ command:
     no_such_bank: "Bank not found or not unique"
     only_self: "It's none of your business"
     rate_out_of_range: "Interest Rate out of range: [%.2f, %.2f]"
+    bankrupted: "You cannot interact with this bank cause it's bankrupted"
   bank_customers:
     no_such_bank: "Bank not found or not unique"
     only_self: "It's none of your business"
@@ -51,27 +52,32 @@ command:
     only_self: "It's none of your business"
     vault_insufficient: "Bank vault do not have that much money"
     player_insufficient: "You do not have that much money"
+    bankrupted: "You cannot interact with this bank cause it's bankrupted"
 
 user:
   deposit:
     invalid_amount: "Invalid amount"
     not_enough_money: "Not enough money"
     bank_not_found: "Bank not found or not unique"
+    bankrupted: "You cannot interact with this bank cause it's bankrupted"
   withdraw:
     invalid_amount: "Invalid amount"
     bank_not_found: "Bank not found or not unique"
     not_enough_deposit: "You do not have that much deposit"
     bank_run: "This bank do not have that much money"
+    bankrupted: "You cannot interact with this bank cause it's bankrupted"
   loan:
     invalid_amount: "Invalid amount"
     bank_not_found: "Bank not found or not unique"
     has_loan: "You haven't cleared your previous loan"
     not_enough_money_bank: "This bank does not have that much money"
+    bankrupted: "You cannot interact with this bank cause it's bankrupted"
   repay:
     invalid_amount: "Invalid amount"
     bank_not_found: "Bank not found or not unique"
     no_need_to_pay: "You do not need to pay that much money"
     not_enough_money: "You do not have that much money"
+    bankrupted: "You cannot interact with this bank cause it's bankrupted"
   sign:
     invalid_sign: "This is an invalid bank sign"
     invalid_number: "This is not an valid number"
@@ -83,6 +89,7 @@ user:
     break_no_permission: "You cannot break this sign"
     break_success: "You broke the bank sign"
     use_no_permission: "You do not have permission to use this sign"
+    bankrupted: "You cannot interact with this bank cause it's bankrupted"
 
     text_saving: "Saving Service"
     text_withdraw: "Withdraw"

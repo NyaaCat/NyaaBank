@@ -3,6 +3,7 @@ package cat.nyaa.nyaabank.signs;
 import cat.nyaa.nyaabank.CommonAction;
 import cat.nyaa.nyaabank.I18n;
 import cat.nyaa.nyaabank.NyaaBank;
+import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.SignRegistration;
@@ -50,6 +51,10 @@ public class SignListener implements Listener{
             BankRegistration bank = plugin.dbm.getUniqueBank(sr.bankId.toString());
             if (bank == null) {
                 p.sendMessage(I18n._("user.sign.invalid_sign"));
+                return;
+            }
+            if (bank.status == BankStatus.BANKRUPT) {
+                p.sendMessage(I18n._("user.sign.bankrupted"));
                 return;
             }
             if (sr.type == TransactionType.LOAN && sr.loanAmount <= 0) {

@@ -1,6 +1,7 @@
 package cat.nyaa.nyaabank.database;
 
 import cat.nyaa.nyaabank.NyaaBank;
+import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
@@ -121,6 +122,7 @@ public class CycleManager {
         }
         // compute BankAccounts
         for (UUID bankId : accountMap.keySet()) {
+            if (bankMap.get(bankId).status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
             for (UUID playerId : accountMap.get(bankId).keySet()) {
                 BankAccount account = accountMap.get(bankId).get(playerId);
                 BankRegistration bank = bankMap.get(bankId);
@@ -173,6 +175,7 @@ public class CycleManager {
         // compute Partial Records
         for (PartialRecord partial : plugin.dbm.query(PartialRecord.class).select()) {
             BankRegistration bank = bankMap.get(partial.bankId);
+            if (bank.status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
             BankAccount account = null;
             if (accountMap.containsKey(partial.bankId)) {
                 account = accountMap.get(partial.bankId).get(partial.playerId);
@@ -260,6 +263,7 @@ public class CycleManager {
 
         // update interest := interestNext
         for (BankRegistration bank : bankMap.values()) {
+            if (bank.status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
             bank.debitInterest = bank.debitInterestNext;
             bank.savingInterest = bank.savingInterestNext;
             bank.interestType = bank.interestTypeNext;

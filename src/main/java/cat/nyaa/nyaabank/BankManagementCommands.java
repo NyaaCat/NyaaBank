@@ -1,5 +1,6 @@
 package cat.nyaa.nyaabank;
 
+import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.enums.InterestType;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
@@ -139,7 +140,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
 
         BankRegistration bank = getBankWithPermission(sender, idNumber, "command.bank_interest.no_such_bank",
                 "nb.bank_interest_admin", "command.bank_interest.only_self");
-
+        if (bank.status == BankStatus.BANKRUPT) throw new BadCommandException("command.bank_interest.bankrupted");
         op = op.toUpperCase();
         switch (op) {
             case "SAVING": {
@@ -237,6 +238,7 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         double capital = args.nextDouble();
         BankRegistration bank = getBankWithPermission(sender, args.nextInt(), "command.bank_vault.no_such_bank",
                 "nb.bank_vault_admin", "command.bank_vault.only_self");
+        if (bank.status == BankStatus.BANKRUPT) throw new BadCommandException("command.bank_vault.bankrupted");
         if (capital > 0) {  // move from player to bank vault
             if (!plugin.eco.has(p, capital)) throw new BadCommandException("command.bank_vault.player_insufficient");
             bank.capital += capital;

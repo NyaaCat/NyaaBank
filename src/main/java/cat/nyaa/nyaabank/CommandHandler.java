@@ -204,7 +204,6 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
                         .update(b, BankRegistration.N_CAPITAL);
             }
         } else if ("bank".equals(type)) {
-            // TODO make other codes check bankrupt state
             /* STEP 1: Force acquire all loan
              * STEP 2: Return all deposits
              * STEP 3: Clear vault and balance with banker
