@@ -108,6 +108,7 @@ public class TransactionLog {
             case INTEREST_LOAN:    // from PLAYER to BANK
             case PARTIAL_MOVE:    // from PLAYER to BANK, PARTIAL_ID in EXTRA
             case VAULT_CHANGE:
+            case COMMISSION:
             case QUERY:   // from PLAYER to {random stuff}, detail in EXTRA
                 fromType = AccountType.PLAYER;
                 toType = AccountType.BANK;

@@ -28,6 +28,18 @@ public final class SignHelper {
         }
     }
 
+    public static Double parseDouble(String s) {
+        Double d = null;
+        try {
+            d = Double.parseDouble(s);
+        } catch (NumberFormatException ex) {
+            d = null;
+        }
+        if (Double.isInfinite(d) || Double.isNaN(d))
+            d = null;
+        return d;
+    }
+
     /**
      * get the registered sign at the given location
      * if no sign registered, return null
@@ -108,7 +120,7 @@ public final class SignHelper {
         }
         if (bank == null) return null;
         signReg.bankId = bank.bankId;
-        signReg.commissionFee = 0D; //TODO commission
+        signReg.commissionFee = 0D;
         signReg.location = signLoc.clone();
         signReg.loanAmount = -1D; // to meet DB not null constraint
         String srv = lines[2].toUpperCase();
@@ -118,20 +130,18 @@ public final class SignHelper {
                 break;
             case "WITHDRAW":
                 signReg.type = TransactionType.WITHDRAW;
+                signReg.commissionFee = parseDouble(lines[3]);
+                if (signReg.commissionFee == null) return null;
                 break;
             case "LOAN":
                 signReg.type = TransactionType.LOAN;
-                double amount;
-                try {
-                    amount = Double.parseDouble(lines[3]);
-                } catch(NumberFormatException ex) {
-                    return null;
-                }
-                if (Double.isInfinite(amount) || Double.isNaN(amount)) return null;
-                signReg.loanAmount = amount;
+                signReg.loanAmount = parseDouble(lines[3]);
+                if (signReg.loanAmount == null) return null;
                 break;
             case "REPAY":
                 signReg.type = TransactionType.REPAY;
+                signReg.commissionFee = parseDouble(lines[3]);
+                if (signReg.commissionFee == null) return null;
                 break;
             default:
                 return null;

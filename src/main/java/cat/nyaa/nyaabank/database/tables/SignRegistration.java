@@ -31,7 +31,7 @@ public class SignRegistration {
     @DataColumn(N_LOAN_AMOUNT)
     public Double loanAmount; // for LOAN sign only
     @DataColumn(N_COMMISSION_FEE)
-    public Double commissionFee;
+    public Double commissionFee; // for WITHDRAW & REPAY only
 
     @PrimaryKey
     @DataColumn(N_SIGN_ID)

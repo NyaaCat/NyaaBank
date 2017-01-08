@@ -1,5 +1,7 @@
 package cat.nyaa.nyaabank.database.enums;
 
+
+// NOTE: Add new values to TransactionLog::<init>
 public enum TransactionType {
     DEPOSIT,  // from PLAYER to BANK, PARTIAL_ID in EXTRA
     WITHDRAW, // from BANK to PLAYER
@@ -9,5 +11,6 @@ public enum TransactionType {
     INTEREST_LOAN,    // from PLAYER to BANK
     PARTIAL_MOVE,     // from PLAYER to BANK, PARTIAL_ID in EXTRA
     VAULT_CHANGE,     // from PLAYER to BANK
+    COMMISSION,       // from PLAYER to BANK
     QUERY;   // from PLAYER to {random stuff}, detail in EXTRA
 }

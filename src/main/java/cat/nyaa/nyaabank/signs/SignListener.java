@@ -32,6 +32,29 @@ public class SignListener implements Listener{
         callbacks = new ChatInputCallbacks(plugin);
     }
 
+    /**
+     * Apply commission fee, move from player to bank.
+     * amount can be negative
+     */
+    private void applyCommission(Player player, BankRegistration bank, double amount) {
+        if (amount > 0) {
+            plugin.eco.withdrawPlayer(player, amount);
+            bank.capital += amount;
+            plugin.dbm.query(BankRegistration.class)
+                    .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
+                    .update(bank, BankRegistration.N_CAPITAL);
+            plugin.dbm.log(TransactionType.COMMISSION).from(player.getUniqueId()).to(bank.bankId)
+                    .capital(amount).insert();
+        } else if (amount < 0) {
+            plugin.eco.depositPlayer(player, -amount);
+            bank.capital -= -amount;
+            plugin.dbm.query(BankRegistration.class)
+                    .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
+                    .update(bank, BankRegistration.N_CAPITAL);
+            plugin.dbm.log(TransactionType.COMMISSION).from(player.getUniqueId()).to(bank.bankId)
+                    .capital(amount).insert();
+        } // do nothing if zero commission
+    }
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRightClickSign(PlayerInteractEvent ev) {
         if (!ev.hasBlock()) return;
@@ -94,7 +117,9 @@ public class SignListener implements Listener{
                                 public void onDoubleInput(Player p, double input, boolean isAll) {
                                     try {
                                         CommonAction.withdraw(plugin, p, bank, input, isAll);
+                                        applyCommission(p, bank, sr.commissionFee);
                                         p.sendMessage(I18n._("user.sign.input_accepted"));
+
                                     } catch (CommonAction.TransactionException ex) {
                                         p.sendMessage(I18n._(ex.getMessage()));
                                     }
@@ -133,6 +158,7 @@ public class SignListener implements Listener{
                                 public void onDoubleInput(Player p, double input, boolean isAll) {
                                     try {
                                         CommonAction.repay(plugin, p, bank, input, isAll);
+                                        applyCommission(p, bank, sr.commissionFee);
                                         p.sendMessage(I18n._("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
                                         p.sendMessage(I18n._(ex.getMessage()));
@@ -156,12 +182,16 @@ public class SignListener implements Listener{
     @EventHandler(ignoreCancelled = true)
     public void onPlayerCreateSign(SignChangeEvent ev) {
         if (!ev.getPlayer().hasPermission("nb.sign_create")) return;
+        String firstLine = ev.getLine(0);
+        if (!SignHelper.stringEqIgnoreColor(firstLine, SIGN_MAGIC_FALLBACK, true) &&
+                !SignHelper.stringEqIgnoreColor(firstLine, plugin.cfg.signMagic, true))
+            return; // not a bank sign
         SignRegistration sr = SignHelper.getSign(plugin, ev.getBlock().getLocation());
         boolean newSign = false;
         if (sr == null) newSign = true;
         sr = SignHelper.parseSign(plugin, ev.getLines(), sr, ev.getBlock().getLocation());
         if (sr == null) {
-            // ev.getPlayer().sendMessage(I18n._("user.sign.create_fail"));
+            ev.getPlayer().sendMessage(I18n._("user.sign.create_fail"));
             return;
         }
         if (!ev.getPlayer().hasPermission("nb.sign_create_admin")) { // skip bank owner check for admins
