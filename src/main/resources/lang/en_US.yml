@@ -30,7 +30,6 @@ command:
       Established Date: %s
       Status: %s
       Registered Capital: %.2f
-      Current Capital: %.2f
       Deposit Interest Rate: %f%%
       Loan Interest Rate: %f%%
       Interest Type: %s

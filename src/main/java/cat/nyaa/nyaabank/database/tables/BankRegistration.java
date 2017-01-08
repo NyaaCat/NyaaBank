@@ -16,7 +16,6 @@ public class BankRegistration {
     public static final String N_ID_NUMBER = "id_number";
     public static final String N_BANK_NAME = "bank_name";
     public static final String N_REGISTERED_CAPITAL = "registered_capital";
-    public static final String N_CAPITAL = "capital";
     public static final String N_INTEREST_RATE_SAVING = "interest_rate_saving";
     public static final String N_INTEREST_RATE_DEBIT = "interest_rate_debit";
     public static final String N_INTEREST_RATE_SAVING_NEXT = "interest_rate_saving_next";
@@ -36,8 +35,6 @@ public class BankRegistration {
     public String name;
     @DataColumn(N_REGISTERED_CAPITAL)
     public Double registered_capital;
-    @DataColumn(N_CAPITAL)
-    public Double capital; // actual capital left
     @DataColumn(N_INTEREST_RATE_SAVING)
     public Double savingInterest; // default saving interest, hundred percent
     @DataColumn(N_INTEREST_RATE_DEBIT)

@@ -5,6 +5,7 @@ import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.time.Instant;
@@ -24,6 +25,7 @@ public final class CommonAction {
         if (!plugin.eco.has(player, amount)) throw new TransactionException("user.deposit.not_enough_money");
         if (bank == null) throw new TransactionException("user.deposit.bank_not_found");
         if (bank.status == BankStatus.BANKRUPT) throw new TransactionException("user.deposit.bankrupted");
+        OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
 
         plugin.eco.withdrawPlayer(player, amount);
         PartialRecord partial = new PartialRecord();
@@ -40,20 +42,17 @@ public final class CommonAction {
                 .capital(amount)
                 .extra("partialId", partial.transactionId.toString())
                 .insert();
-
-        bank.capital += amount;
-        plugin.dbm.query(BankRegistration.class)
-                .whereEq(BankRegistration.N_BANK_ID, bank.bankId)
-                .update(bank, BankRegistration.N_CAPITAL);
+        plugin.eco.depositPlayer(banker, amount);
     }
 
     public static void withdraw(NyaaBank plugin, Player player, BankRegistration bank,
                                 double amount, boolean withdrawAll) throws TransactionException {
         if (bank == null) throw new TransactionException("user.withdraw.bank_not_found");
         if (bank.status == BankStatus.BANKRUPT) throw new TransactionException("user.withdraw.bankrupted");
+        OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
         double totalDeposit = plugin.dbm.getTotalDeposit(bank.bankId, player.getUniqueId());
         if (withdrawAll) {
-            if (totalDeposit >= bank.capital) throw new TransactionException("user.withdraw.bank_run");
+            if (!plugin.eco.has(banker, totalDeposit)) throw new TransactionException("user.withdraw.bank_run");
             BankAccount account = plugin.dbm.getAccount(bank.bankId, player.getUniqueId());
             if (account != null) {
                 account.deposit = 0D;
@@ -67,16 +66,14 @@ public final class CommonAction {
                     .whereEq(PartialRecord.N_PLAYER_ID, player.getUniqueId())
                     .whereEq(PartialRecord.N_TRANSACTION_TYPE, TransactionType.DEPOSIT.name())
                     .delete();
-            bank.capital -= totalDeposit;
-            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
-                    .update(bank, BankRegistration.N_CAPITAL);
+            plugin.eco.withdrawPlayer(banker, totalDeposit);
             plugin.dbm.log(TransactionType.WITHDRAW).from(bank.bankId).to(player.getUniqueId())
                     .capital(totalDeposit).insert();
             plugin.eco.depositPlayer(player, totalDeposit);
         } else {
             if (amount <= 0) throw new TransactionException("user.withdraw.invalid_amount");
             if (amount > totalDeposit) throw new TransactionException("user.withdraw.not_enough_deposit");
-            if (amount >= bank.capital) throw new TransactionException("user.withdraw.bank_run");
+            if (!plugin.eco.has(banker, amount)) throw new TransactionException("user.withdraw.bank_run");
             double realAmount = 0;
             List<PartialRecord> l = plugin.dbm.getPartialRecords(bank.bankId, player.getUniqueId(), TransactionType.DEPOSIT);
             l.sort((a, b) -> a.capital.equals(b.capital) ? 0 : (a.capital < b.capital ? -1 : 1));
@@ -115,9 +112,7 @@ public final class CommonAction {
                 plugin.dbm.query(BankAccount.class).whereEq(BankAccount.N_ACCOUNT_ID, account.getAccountId())
                         .update(account, BankAccount.N_DEPOSIT, BankAccount.N_DEPOSIT_INTEREST);
             }
-            bank.capital -= realAmount;
-            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
-                    .update(bank, BankRegistration.N_CAPITAL);
+            plugin.eco.withdrawPlayer(banker, realAmount);
             plugin.dbm.log(TransactionType.WITHDRAW).from(bank.bankId).to(player.getUniqueId())
                     .capital(realAmount).insert();
             plugin.eco.depositPlayer(player, realAmount);
@@ -129,7 +124,8 @@ public final class CommonAction {
         if (amount <= 0) throw new TransactionException("user.loan.invalid_amount");
         if (bank == null) throw new TransactionException("user.loan.bank_not_found");
         if (bank.status == BankStatus.BANKRUPT) throw new TransactionException("user.loan.bankrupted");
-        if (bank.capital <= amount) throw new TransactionException("user.loan.not_enough_money_bank");
+        OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
+        if (!plugin.eco.has(banker, amount)) throw new TransactionException("user.loan.not_enough_money_bank");
         BankAccount account = plugin.dbm.getAccount(bank.bankId, player.getUniqueId());
         if (account != null && (account.loan > 0 || account.loan_interest > 0)) {
             throw new TransactionException("user.loan.has_loan");
@@ -149,8 +145,7 @@ public final class CommonAction {
         partial.type = TransactionType.LOAN;
         partial.startDate = Instant.now();
         plugin.dbm.query(PartialRecord.class).insert(partial);
-        bank.capital -= amount;
-        plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank, "capital");
+        plugin.eco.withdrawPlayer(banker, amount);
         plugin.eco.depositPlayer(player, amount);
         plugin.dbm.log(TransactionType.LOAN)
                 .to(player.getUniqueId())
@@ -164,6 +159,7 @@ public final class CommonAction {
                              double amount, boolean repayAll) throws TransactionException {
         if (bank == null) throw new TransactionException("user.repay.bank_not_found");
         if (bank.status == BankStatus.BANKRUPT) throw new TransactionException("user.repay.bankrupted");
+        OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
 
         double totalLoan = plugin.dbm.getTotalLoan(bank.bankId, player.getUniqueId());
         if (repayAll) {
@@ -181,9 +177,7 @@ public final class CommonAction {
                     .whereEq(PartialRecord.N_PLAYER_ID, player.getUniqueId())
                     .whereEq(PartialRecord.N_TRANSACTION_TYPE, TransactionType.LOAN.name())
                     .delete();
-            bank.capital += totalLoan;
-            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
-                    .update(bank, BankRegistration.N_CAPITAL);
+            plugin.eco.depositPlayer(banker, totalLoan);
             plugin.dbm.log(TransactionType.REPAY).to(bank.bankId).from(player.getUniqueId())
                     .capital(totalLoan).insert();
             plugin.eco.withdrawPlayer(player, totalLoan);
@@ -229,9 +223,7 @@ public final class CommonAction {
                 plugin.dbm.query(BankAccount.class).whereEq(BankAccount.N_ACCOUNT_ID, account.getAccountId())
                         .update(account, BankAccount.N_LOAN, BankAccount.N_LOAN_INTEREST);
             }
-            bank.capital += realAmount;
-            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
-                    .update(bank, BankRegistration.N_CAPITAL);
+            plugin.eco.depositPlayer(banker, realAmount);
             plugin.dbm.log(TransactionType.REPAY).to(bank.bankId).from(player.getUniqueId())
                     .capital(realAmount).insert();
             plugin.eco.withdrawPlayer(player, realAmount);

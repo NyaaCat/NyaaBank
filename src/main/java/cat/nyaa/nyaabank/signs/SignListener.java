@@ -9,6 +9,7 @@ import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -37,20 +38,15 @@ public class SignListener implements Listener{
      * amount can be negative
      */
     private void applyCommission(Player player, BankRegistration bank, double amount) {
+        OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
         if (amount > 0) {
             plugin.eco.withdrawPlayer(player, amount);
-            bank.capital += amount;
-            plugin.dbm.query(BankRegistration.class)
-                    .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
-                    .update(bank, BankRegistration.N_CAPITAL);
+            plugin.eco.depositPlayer(banker, amount);
             plugin.dbm.log(TransactionType.COMMISSION).from(player.getUniqueId()).to(bank.bankId)
                     .capital(amount).insert();
         } else if (amount < 0) {
             plugin.eco.depositPlayer(player, -amount);
-            bank.capital -= -amount;
-            plugin.dbm.query(BankRegistration.class)
-                    .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
-                    .update(bank, BankRegistration.N_CAPITAL);
+            plugin.eco.withdrawPlayer(banker, amount);
             plugin.dbm.log(TransactionType.COMMISSION).from(player.getUniqueId()).to(bank.bankId)
                     .capital(amount).insert();
         } // do nothing if zero commission

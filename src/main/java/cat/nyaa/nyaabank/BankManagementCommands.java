@@ -124,7 +124,6 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
                 bank.establishDate.toString(),
                 bank.status.name(),
                 bank.registered_capital,
-                bank.capital,
                 bank.savingInterest,
                 bank.debitInterest,
                 bank.interestType.name(),
@@ -229,29 +228,6 @@ public class BankManagementCommands extends CommandReceiver<NyaaBank> {
         }
         if (ids.size() <= 0) {
             msg(sender, "command.bank_customers.no_customer");
-        }
-    }
-
-    @SubCommand(value = "vault", permission = "nb.bank_vault")
-    public void depositVault(CommandSender sender, Arguments args) {
-        Player p = asPlayer(sender);
-        double capital = args.nextDouble();
-        BankRegistration bank = getBankWithPermission(sender, args.nextInt(), "command.bank_vault.no_such_bank",
-                "nb.bank_vault_admin", "command.bank_vault.only_self");
-        if (bank.status == BankStatus.BANKRUPT) throw new BadCommandException("command.bank_vault.bankrupted");
-        if (capital > 0) {  // move from player to bank vault
-            if (!plugin.eco.has(p, capital)) throw new BadCommandException("command.bank_vault.player_insufficient");
-            bank.capital += capital;
-            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank, BankRegistration.N_CAPITAL);
-            plugin.dbm.log(TransactionType.VAULT_CHANGE).from(p.getUniqueId()).to(bank.bankId).capital(capital).insert();
-            plugin.eco.withdrawPlayer(p, capital);
-        } else if (capital < 0) { // move from vault to player account
-            capital = -capital;
-            if (capital > bank.capital) throw new BadCommandException("command.bank_vault.vault_insufficient");
-            bank.capital -= capital;
-            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank, BankRegistration.N_CAPITAL);
-            plugin.dbm.log(TransactionType.VAULT_CHANGE).from(p.getUniqueId()).to(bank.bankId).capital(-capital).insert();
-            plugin.eco.depositPlayer(p, capital);
         }
     }
 }

@@ -7,6 +7,7 @@ import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
 import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import cat.nyaa.nyaabank.signs.SignHelper;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
@@ -131,6 +132,7 @@ public class CycleManager {
             for (UUID playerId : accountMap.get(bankId).keySet()) {
                 BankAccount account = accountMap.get(bankId).get(playerId);
                 BankRegistration bank = bankMap.get(bankId);
+                OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
 
                 // Deposit interest
                 double deposit_interest = 0;
@@ -143,12 +145,14 @@ public class CycleManager {
                 }
                 deposit_interest = Math.round(deposit_interest * 1000D) / 1000D; // round to 10^-3
 
-                bank.capital -= deposit_interest;
                 if (deposit_interest >= 0) {
+                    plugin.eco.withdrawPlayer(banker, deposit_interest);
                     account.deposit_interest += deposit_interest;
                 } else if (deposit_interest + account.deposit_interest > 0) { // negative interest i.e. money transferred from player to bank
+                    plugin.eco.depositPlayer(banker, -deposit_interest);
                     account.deposit_interest += deposit_interest;
                 } else {
+                    plugin.eco.depositPlayer(banker, -deposit_interest);
                     account.deposit += deposit_interest + account.deposit_interest;
                     account.deposit_interest = 0D;
                 }
@@ -181,6 +185,7 @@ public class CycleManager {
         for (PartialRecord partial : plugin.dbm.query(PartialRecord.class).select()) {
             BankRegistration bank = bankMap.get(partial.bankId);
             if (bank.status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
+            OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
             BankAccount account = null;
             if (accountMap.containsKey(partial.bankId)) {
                 account = accountMap.get(partial.bankId).get(partial.playerId);
@@ -205,6 +210,7 @@ public class CycleManager {
                     deposit_interest = Math.round(deposit_interest * 1000D) / 1000D;
 
                     if (deposit_interest >= 0) {
+                        plugin.eco.withdrawPlayer(banker, deposit_interest);
                         account.deposit += partial.capital;
                         account.deposit_interest += deposit_interest;
                         plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
@@ -213,6 +219,7 @@ public class CycleManager {
                                 .extra("partialId", partial.transactionId.toString())
                                 .extra("target", "DEPOSIT").insert();
                     } else if (partial.capital + deposit_interest > 0) { // negative interest i.e. money transferred from player to bank
+                        plugin.eco.depositPlayer(banker, -deposit_interest);
                         account.deposit += partial.capital + deposit_interest;
                         plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
                                 .extra("partialId", partial.transactionId.toString()).insert();
@@ -220,12 +227,10 @@ public class CycleManager {
                                 .extra("partialId", partial.transactionId.toString())
                                 .extra("target", "DEPOSIT").insert();
                     } else { // bank take all the money
-                        bank.capital += partial.capital;
-                        deposit_interest = 0;
+                        plugin.eco.depositPlayer(banker, partial.capital);
                         plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(-partial.capital)
                                 .extra("partialId", partial.transactionId.toString()).insert();
                     }
-                    bank.capital -= deposit_interest;
                     break;
                 }
                 case LOAN: { // Loan interest
