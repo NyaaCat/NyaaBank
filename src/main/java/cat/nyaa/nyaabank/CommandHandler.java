@@ -181,11 +181,11 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
             }
             for (BankAccount r : accounts) {
                 BankRegistration bank = cachedBanks.get(r.bankId);
-                OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
                 if (bank == null) {
                     bank = plugin.dbm.getUniqueBank(r.getBankId());
                     cachedBanks.put(r.bankId, bank);
                 }
+                OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
                 double netDeposit = r.deposit + r.deposit_interest - r.loan - r.loan_interest;
                 if (netDeposit < 0) { // player owe bank
                     plugin.eco.withdrawPlayer(p, -netDeposit);
@@ -355,6 +355,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
 
     @SubCommand(value = "_check", permission = "nb.debug") // for debug only
     public void forceCheckPoint(CommandSender sender, Arguments args) {
+        sender.sendMessage(String.format("Cycle: %.2f%%", ((double)(plugin.cycle.getNextCheckpoint() - System.currentTimeMillis()))/(double)plugin.cfg.interestCycle*100D));
         plugin.cycle.updateDatabaseInterests(plugin.cycle.getNextCheckpoint(), plugin.cfg.interestCycle);
         SignHelper.batchUpdateSign(plugin, plugin.dbm.query(SignRegistration.class).select());
     }

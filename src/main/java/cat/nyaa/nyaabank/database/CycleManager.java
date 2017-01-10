@@ -146,13 +146,10 @@ public class CycleManager {
                 deposit_interest = Math.round(deposit_interest * 1000D) / 1000D; // round to 10^-3
 
                 if (deposit_interest >= 0) {
-                    plugin.eco.withdrawPlayer(banker, deposit_interest);
                     account.deposit_interest += deposit_interest;
                 } else if (deposit_interest + account.deposit_interest > 0) { // negative interest i.e. money transferred from player to bank
-                    plugin.eco.depositPlayer(banker, -deposit_interest);
                     account.deposit_interest += deposit_interest;
                 } else {
-                    plugin.eco.depositPlayer(banker, -deposit_interest);
                     account.deposit += deposit_interest + account.deposit_interest;
                     account.deposit_interest = 0D;
                 }
@@ -206,11 +203,10 @@ public class CycleManager {
             switch (partial.type) {
                 case DEPOSIT: { // Deposit interest
                     double deposit_interest = partial.capital * bank.savingInterest / 100D;
-                    deposit_interest *= (designatedTimestamp - partial.startDate.toEpochMilli()) / cycleLength;
+                    deposit_interest *= (designatedTimestamp - partial.startDate.toEpochMilli()) / (double)cycleLength;
                     deposit_interest = Math.round(deposit_interest * 1000D) / 1000D;
 
                     if (deposit_interest >= 0) {
-                        plugin.eco.withdrawPlayer(banker, deposit_interest);
                         account.deposit += partial.capital;
                         account.deposit_interest += deposit_interest;
                         plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
@@ -219,7 +215,6 @@ public class CycleManager {
                                 .extra("partialId", partial.transactionId.toString())
                                 .extra("target", "DEPOSIT").insert();
                     } else if (partial.capital + deposit_interest > 0) { // negative interest i.e. money transferred from player to bank
-                        plugin.eco.depositPlayer(banker, -deposit_interest);
                         account.deposit += partial.capital + deposit_interest;
                         plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
                                 .extra("partialId", partial.transactionId.toString()).insert();
@@ -227,7 +222,6 @@ public class CycleManager {
                                 .extra("partialId", partial.transactionId.toString())
                                 .extra("target", "DEPOSIT").insert();
                     } else { // bank take all the money
-                        plugin.eco.depositPlayer(banker, partial.capital);
                         plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(-partial.capital)
                                 .extra("partialId", partial.transactionId.toString()).insert();
                     }
@@ -235,7 +229,7 @@ public class CycleManager {
                 }
                 case LOAN: { // Loan interest
                     double loan_interest = partial.capital * bank.debitInterest / 100D;
-                    loan_interest *= (designatedTimestamp - partial.startDate.toEpochMilli()) / cycleLength;
+                    loan_interest *= (designatedTimestamp - partial.startDate.toEpochMilli()) / (double)cycleLength;
                     loan_interest = Math.round(loan_interest * 1000D) / 1000D;
 
                     if (loan_interest >= 0) {
