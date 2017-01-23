@@ -34,10 +34,10 @@ public final class SignHelper {
         try {
             d = Double.parseDouble(s);
         } catch (NumberFormatException ex) {
-            d = null;
+            return null;
         }
         if (Double.isInfinite(d) || Double.isNaN(d))
-            d = null;
+            return null;
         return d;
     }
 
