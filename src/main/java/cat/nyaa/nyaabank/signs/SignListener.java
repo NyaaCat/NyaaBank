@@ -62,6 +62,7 @@ public class SignListener implements Listener{
         if (stringEqIgnoreColor(magicLine, plugin.cfg.signMagic, false) ||
                 stringEqIgnoreColor(magicLine, SIGN_MAGIC_FALLBACK, false)) {
             Player p = ev.getPlayer();
+            if (callbacks.callbacks.containsKey(p.getUniqueId())) return;
             SignRegistration sr = SignHelper.getSign(plugin, ev.getClickedBlock().getLocation());
             if (sr == null) {
                 p.sendMessage(I18n._("user.sign.invalid_sign"));

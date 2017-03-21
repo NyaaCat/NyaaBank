@@ -35,7 +35,7 @@ class ChatInputCallbacks {
             }
             callbacks.remove(playerId);
             timers.remove(playerId);
-            if (callbacks.size() <= 0 && listener != null) {
+            if (callbacks.isEmpty() && listener != null) {
                 HandlerList.unregisterAll(listener);
                 listener = null;
             }
@@ -75,14 +75,14 @@ class ChatInputCallbacks {
             callbacks.remove(playerId);
             timers.remove(playerId);
             assert(listener == this);
-            if (callbacks.size() <= 0) {
+            if (callbacks.isEmpty()) {
                 HandlerList.unregisterAll(listener);
                 listener = null;
             }
         }
     }
 
-    private final Map<UUID, InputCallback> callbacks = new HashMap<>();
+    final Map<UUID, InputCallback> callbacks = new HashMap<>();
     private final Map<UUID, BukkitRunnable> timers = new HashMap<>();
     private InputListener listener = null;
     private final NyaaBank plugin;
