@@ -61,8 +61,8 @@ public final class SignHelper {
      * IllegalArgumentException thrown if not valid sign block.
      */
     public static void updateSignBlock(NyaaBank plugin, Location signLocation, SignRegistration signReg) {
-        if (signLocation.getBlock().getType() != Material.WALL_SIGN &&
-                signLocation.getBlock().getType() != Material.SIGN_POST) {
+        if (signLocation == null || !(signLocation.getBlock().getType() == Material.WALL_SIGN ||
+                signLocation.getBlock().getType() == Material.SIGN_POST)) {
             throw new IllegalArgumentException("Not a valid sign block");
         }
         BankRegistration bank = plugin.dbm.getUniqueBank(signReg.getBankId());
