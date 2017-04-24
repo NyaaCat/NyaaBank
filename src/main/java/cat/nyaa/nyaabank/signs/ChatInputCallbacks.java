@@ -31,7 +31,7 @@ class ChatInputCallbacks {
         public void run() {
             Player p = Bukkit.getPlayer(playerId);
             if (p != null) {
-                p.sendMessage(I18n._("user.sign.input_timeout"));
+                p.sendMessage(I18n.format("user.sign.input_timeout"));
             }
             callbacks.remove(playerId);
             timers.remove(playerId);
@@ -63,7 +63,7 @@ class ChatInputCallbacks {
                     number = null;
                 }
                 if (number == null) {
-                    ev.getPlayer().sendMessage(I18n._("user.sign.invalid_number"));
+                    ev.getPlayer().sendMessage(I18n.format("user.sign.invalid_number"));
                 } else {
                     callbacks.get(playerId).onDoubleInput(ev.getPlayer(), number, false);
                 }

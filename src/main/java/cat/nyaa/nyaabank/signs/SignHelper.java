@@ -76,20 +76,20 @@ public final class SignHelper {
                 +bank.name);
         switch (signReg.type) {
             case LOAN:
-                sign.setLine(2, I18n._("user.sign.text_loan"));
-                sign.setLine(3, I18n._("user.sign.hint_loan", signReg.loanAmount, bank.debitInterest));
+                sign.setLine(2, I18n.format("user.sign.text_loan"));
+                sign.setLine(3, I18n.format("user.sign.hint_loan", signReg.loanAmount, bank.debitInterest));
                 break;
             case DEPOSIT:
-                sign.setLine(2, I18n._("user.sign.text_saving"));
-                sign.setLine(3, I18n._("user.sign.hint_saving", bank.savingInterest));
+                sign.setLine(2, I18n.format("user.sign.text_saving"));
+                sign.setLine(3, I18n.format("user.sign.hint_saving", bank.savingInterest));
                 break;
             case WITHDRAW:
-                sign.setLine(2, I18n._("user.sign.text_withdraw"));
-                sign.setLine(3, I18n._("user.sign.hint_withdraw", signReg.commissionFee));
+                sign.setLine(2, I18n.format("user.sign.text_withdraw"));
+                sign.setLine(3, I18n.format("user.sign.hint_withdraw", signReg.commissionFee));
                 break;
             case REPAY:
-                sign.setLine(2, I18n._("user.sign.text_repay"));
-                sign.setLine(3, I18n._("user.sign.hint_repay", signReg.commissionFee));
+                sign.setLine(2, I18n.format("user.sign.text_repay"));
+                sign.setLine(3, I18n.format("user.sign.hint_repay", signReg.commissionFee));
                 break;
             default:
                 throw new IllegalArgumentException("Invalid sign type");

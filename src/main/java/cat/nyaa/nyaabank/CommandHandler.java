@@ -21,7 +21,6 @@ import java.time.Instant;
 import java.util.*;
 
 import static cat.nyaa.nyaabank.database.enums.TransactionType.REPAY;
-import static cat.nyaa.nyaabank.database.enums.TransactionType.VAULT_CHANGE;
 import static cat.nyaa.nyaabank.database.enums.TransactionType.WITHDRAW;
 
 public class CommandHandler extends CommandReceiver<NyaaBank> {
@@ -348,7 +347,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
             @Override
             public void run() {
                 plugin.doReload();
-                sender.sendMessage(I18n._("command.reload.complete"));
+                sender.sendMessage(I18n.format("command.reload.complete"));
             }
         }.runTaskLater(plugin, 1L);
     }

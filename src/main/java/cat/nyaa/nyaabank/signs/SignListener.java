@@ -64,29 +64,29 @@ public class SignListener implements Listener{
             Player p = ev.getPlayer();
             SignRegistration sr = SignHelper.getSign(plugin, ev.getClickedBlock().getLocation());
             if (sr == null) {
-                p.sendMessage(I18n._("user.sign.invalid_sign"));
+                p.sendMessage(I18n.format("user.sign.invalid_sign"));
                 return;
             }
             BankRegistration bank = plugin.dbm.getUniqueBank(sr.bankId.toString());
             if (bank == null) {
-                p.sendMessage(I18n._("user.sign.invalid_sign"));
+                p.sendMessage(I18n.format("user.sign.invalid_sign"));
                 return;
             }
             if (bank.status == BankStatus.BANKRUPT) {
-                p.sendMessage(I18n._("user.sign.bankrupted"));
+                p.sendMessage(I18n.format("user.sign.bankrupted"));
                 return;
             }
             if (sr.type == TransactionType.LOAN && sr.loanAmount <= 0) {
-                p.sendMessage(I18n._("user.sign.invalid_sign"));
+                p.sendMessage(I18n.format("user.sign.invalid_sign"));
                 return;
             }
             switch (sr.type) {
                 case DEPOSIT:
                     if (!p.hasPermission("nb.deposit")) {
-                        p.sendMessage(I18n._("user.sign.use_no_permission"));
+                        p.sendMessage(I18n.format("user.sign.use_no_permission"));
                         break;
                     }
-                    p.sendMessage(I18n._("user.sign.input_prompt_deposit", plugin.cfg.signTimeout));
+                    p.sendMessage(I18n.format("user.sign.input_prompt_deposit", plugin.cfg.signTimeout));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
@@ -94,19 +94,19 @@ public class SignListener implements Listener{
                                     try {
                                         if (isAll) throw new CommonAction.TransactionException("user.sign.invalid_number");
                                         CommonAction.deposit(plugin, p, bank, input);
-                                        p.sendMessage(I18n._("user.sign.input_accepted"));
+                                        p.sendMessage(I18n.format("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
-                                        p.sendMessage(I18n._(ex.getMessage()));
+                                        p.sendMessage(I18n.format(ex.getMessage()));
                                     }
                                 }
                             });
                     break;
                 case WITHDRAW:
                     if (!p.hasPermission("nb.withdraw")) {
-                        p.sendMessage(I18n._("user.sign.use_no_permission"));
+                        p.sendMessage(I18n.format("user.sign.use_no_permission"));
                         break;
                     }
-                    p.sendMessage(I18n._("user.sign.input_prompt_withdraw", plugin.cfg.signTimeout));
+                    p.sendMessage(I18n.format("user.sign.input_prompt_withdraw", plugin.cfg.signTimeout));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
@@ -114,20 +114,20 @@ public class SignListener implements Listener{
                                     try {
                                         CommonAction.withdraw(plugin, p, bank, input, isAll);
                                         applyCommission(p, bank, sr.commissionFee);
-                                        p.sendMessage(I18n._("user.sign.input_accepted"));
+                                        p.sendMessage(I18n.format("user.sign.input_accepted"));
 
                                     } catch (CommonAction.TransactionException ex) {
-                                        p.sendMessage(I18n._(ex.getMessage()));
+                                        p.sendMessage(I18n.format(ex.getMessage()));
                                     }
                                 }
                             });
                     break;
                 case LOAN:
                     if (!p.hasPermission("nb.loan")) {
-                        p.sendMessage(I18n._("user.sign.use_no_permission"));
+                        p.sendMessage(I18n.format("user.sign.use_no_permission"));
                         break;
                     }
-                    p.sendMessage(I18n._("user.sign.input_prompt_loan", plugin.cfg.signTimeout));
+                    p.sendMessage(I18n.format("user.sign.input_prompt_loan", plugin.cfg.signTimeout));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
@@ -135,19 +135,19 @@ public class SignListener implements Listener{
                                     try {
                                         if (!isAll) throw new CommonAction.TransactionException("user.sign.loan_cancelled");
                                         CommonAction.loan(plugin, p, bank, sr.loanAmount);
-                                        p.sendMessage(I18n._("user.sign.input_accepted"));
+                                        p.sendMessage(I18n.format("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
-                                        p.sendMessage(I18n._(ex.getMessage()));
+                                        p.sendMessage(I18n.format(ex.getMessage()));
                                     }
                                 }
                             });
                     break;
                 case REPAY:
                     if (!p.hasPermission("nb.repay")) {
-                        p.sendMessage(I18n._("user.sign.use_no_permission"));
+                        p.sendMessage(I18n.format("user.sign.use_no_permission"));
                         break;
                     }
-                    p.sendMessage(I18n._("user.sign.input_prompt_repay", plugin.cfg.signTimeout));
+                    p.sendMessage(I18n.format("user.sign.input_prompt_repay", plugin.cfg.signTimeout));
                     callbacks.register(ev.getPlayer().getUniqueId(),
                             new ChatInputCallbacks.InputCallback() {
                                 @Override
@@ -155,15 +155,15 @@ public class SignListener implements Listener{
                                     try {
                                         CommonAction.repay(plugin, p, bank, input, isAll);
                                         applyCommission(p, bank, sr.commissionFee);
-                                        p.sendMessage(I18n._("user.sign.input_accepted"));
+                                        p.sendMessage(I18n.format("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
-                                        p.sendMessage(I18n._(ex.getMessage()));
+                                        p.sendMessage(I18n.format(ex.getMessage()));
                                     }
                                 }
                             });
                     break;
                 default:
-                    p.sendMessage(I18n._("user.sign.invalid_sign"));
+                    p.sendMessage(I18n.format("user.sign.invalid_sign"));
                     return; // do not update if an invalid sign
             }
             new BukkitRunnable() {
@@ -187,13 +187,13 @@ public class SignListener implements Listener{
         if (sr == null) newSign = true;
         sr = SignHelper.parseSign(plugin, ev.getLines(), sr, ev.getBlock().getLocation());
         if (sr == null) {
-            ev.getPlayer().sendMessage(I18n._("user.sign.create_fail"));
+            ev.getPlayer().sendMessage(I18n.format("user.sign.create_fail"));
             return;
         }
         if (!ev.getPlayer().hasPermission("nb.sign_create_admin")) { // skip bank owner check for admins
             BankRegistration bank = plugin.dbm.getUniqueBank(sr.getBankId());
             if (bank == null || !ev.getPlayer().getUniqueId().equals(bank.ownerId)) {
-                ev.getPlayer().sendMessage(I18n._("user.sign.create_fail"));
+                ev.getPlayer().sendMessage(I18n.format("user.sign.create_fail"));
                 return;
             }
         }
@@ -202,7 +202,7 @@ public class SignListener implements Listener{
         } else {
             plugin.dbm.query(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).update(sr);
         }
-        ev.getPlayer().sendMessage(I18n._("user.sign.create_success"));
+        ev.getPlayer().sendMessage(I18n.format("user.sign.create_success"));
 
         // update sign next tick
         final SignRegistration fsr = sr;
@@ -221,19 +221,19 @@ public class SignListener implements Listener{
         SignRegistration sr = SignHelper.getSign(plugin, ev.getBlock().getLocation());
         if (sr == null) return;
         if (!ev.getPlayer().hasPermission("nb.sign_break")) {
-            ev.getPlayer().sendMessage(I18n._("user.sign.break_no_permission"));
+            ev.getPlayer().sendMessage(I18n.format("user.sign.break_no_permission"));
             ev.setCancelled(true);
             return;
         }
         if (!ev.getPlayer().hasPermission("nb.sign_break_admin")) { // skip owner check for admin
             BankRegistration bank = plugin.dbm.getUniqueBank(sr.getBankId());
             if (bank != null && !ev.getPlayer().getUniqueId().equals(bank.ownerId)) {
-                ev.getPlayer().sendMessage(I18n._("user.sign.break_no_permission"));
+                ev.getPlayer().sendMessage(I18n.format("user.sign.break_no_permission"));
                 ev.setCancelled(true);
                 return;
             }
         }
         plugin.dbm.query(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).delete();
-        ev.getPlayer().sendMessage(I18n._("user.sign.break_success"));
+        ev.getPlayer().sendMessage(I18n.format("user.sign.break_success"));
     }
 }
