@@ -6,8 +6,8 @@ import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
-import cat.nyaa.utils.CommandReceiver;
-import cat.nyaa.utils.Internationalization;
+import cat.nyaa.nyaacore.CommandReceiver;
+import cat.nyaa.nyaacore.LanguageRepository;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.bukkit.Bukkit;
@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 public class BankManagementCommands extends CommandReceiver<NyaaBank> {
     private final NyaaBank plugin;
 
-    public BankManagementCommands(Object plugin, Internationalization i18n) {
+    public BankManagementCommands(Object plugin, LanguageRepository i18n) {
         super((NyaaBank) plugin, i18n);
         this.plugin = (NyaaBank) plugin;
     }

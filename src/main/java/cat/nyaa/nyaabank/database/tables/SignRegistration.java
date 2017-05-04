@@ -1,9 +1,9 @@
 package cat.nyaa.nyaabank.database.tables;
 
 import cat.nyaa.nyaabank.database.enums.TransactionType;
-import cat.nyaa.utils.database.DataColumn;
-import cat.nyaa.utils.database.DataTable;
-import cat.nyaa.utils.database.PrimaryKey;
+import cat.nyaa.nyaacore.database.DataColumn;
+import cat.nyaa.nyaacore.database.DataTable;
+import cat.nyaa.nyaacore.database.PrimaryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import sun.util.resources.cldr.yav.LocaleNames_yav;

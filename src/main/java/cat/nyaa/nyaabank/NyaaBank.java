@@ -3,7 +3,7 @@ package cat.nyaa.nyaabank;
 import cat.nyaa.nyaabank.database.CycleManager;
 import cat.nyaa.nyaabank.database.DatabaseManager;
 import cat.nyaa.nyaabank.signs.SignListener;
-import cat.nyaa.utils.VaultUtil;
+import cat.nyaa.nyaacore.utils.VaultUtils;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,7 +26,7 @@ public class NyaaBank extends JavaPlugin {
         i18n = new I18n(this, cfg.language);
         dbm = new DatabaseManager(this);
         commandHandler = new CommandHandler(this, i18n);
-        eco = VaultUtil.getVaultInstance();
+        eco = VaultUtils.getVaultEconomy();
         cycle = new CycleManager(this);
         signListener = new SignListener(this);
         getCommand("nyaabank").setExecutor(commandHandler);
@@ -39,7 +39,6 @@ public class NyaaBank extends JavaPlugin {
         getCommand("nyaabank").setExecutor(null);
         cfg.save();
         dbm.close();
-        i18n.reset();
     }
 
     // Reload plugin simply disable the plugin without saving config
@@ -48,7 +47,7 @@ public class NyaaBank extends JavaPlugin {
         getServer().getScheduler().cancelTasks(this);
         getCommand("nyaabank").setExecutor(null);
         dbm.close();
-        i18n.reset();
+        i18n.load();
         onEnable();
     }
 }

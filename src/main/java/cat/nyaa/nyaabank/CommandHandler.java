@@ -8,9 +8,9 @@ import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
 import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import cat.nyaa.nyaabank.signs.SignHelper;
-import cat.nyaa.utils.CommandReceiver;
-import cat.nyaa.utils.Internationalization;
-import cat.nyaa.utils.database.BaseDatabase;
+import cat.nyaa.nyaacore.CommandReceiver;
+import cat.nyaa.nyaacore.LanguageRepository;
+import cat.nyaa.nyaacore.database.BaseDatabase;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -34,7 +34,7 @@ public class CommandHandler extends CommandReceiver<NyaaBank> {
     @SubCommand("bank")
     BankManagementCommands bankCommand;
 
-    public CommandHandler(NyaaBank plugin, Internationalization i18n) {
+    public CommandHandler(NyaaBank plugin, LanguageRepository i18n) {
         super(plugin, i18n);
         this.plugin = plugin;
     }

@@ -3,7 +3,7 @@ package cat.nyaa.nyaabank.database;
 import cat.nyaa.nyaabank.NyaaBank;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.*;
-import cat.nyaa.utils.database.SQLiteDatabase;
+import cat.nyaa.nyaacore.database.SQLiteDatabase;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
