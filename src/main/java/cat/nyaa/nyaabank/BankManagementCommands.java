@@ -22,7 +22,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class BankManagementCommands extends CommandReceiver<NyaaBank> {
+public class BankManagementCommands extends CommandReceiver {
     private final NyaaBank plugin;
 
     public BankManagementCommands(Object plugin, LanguageRepository i18n) {

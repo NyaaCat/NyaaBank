@@ -23,7 +23,7 @@ import java.util.*;
 import static cat.nyaa.nyaabank.database.enums.TransactionType.REPAY;
 import static cat.nyaa.nyaabank.database.enums.TransactionType.WITHDRAW;
 
-public class CommandHandler extends CommandReceiver<NyaaBank> {
+public class CommandHandler extends CommandReceiver {
     @Override
     public String getHelpPrefix() {
         return "";
