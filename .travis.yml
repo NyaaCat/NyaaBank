@@ -13,7 +13,7 @@ before_deploy:
 - git config --global user.name "Travis CI"
 - export GIT_TAG=$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER
 - git tag $GIT_TAG -a -m "Generated tag from TravisCI for build $TRAVIS_BUILD_NUMBER"
-- git push -q https://$GITHUB_KEY@github.com/NyaaCat/NyaaBank --follow-tags
+- git push -q https://$GITHUB_KEY@github.com/NyaaCat/NyaaBank HEAD:$TRAVIS_BRANCH --follow-tags
 deploy:
   skip_cleanup: true
   provider: releases
