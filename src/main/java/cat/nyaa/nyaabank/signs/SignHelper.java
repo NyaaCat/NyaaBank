@@ -159,8 +159,13 @@ public final class SignHelper {
         if (signList == null || signList.size() == 0) return;
         new BukkitRunnable() {
             int idx = 0;
+            boolean cancelled = false;
             @Override
             public void run() {
+                if (cancelled) {
+                    this.cancel();
+                    return;
+                }
                 SignRegistration sr = signList.get(idx);
                 try {
                     updateSignBlock(plugin, sr.location, sr);
@@ -169,7 +174,10 @@ public final class SignHelper {
                     ex.printStackTrace();
                 }
                 idx++;
-                if (idx >= signList.size()) this.cancel();
+                if (idx >= signList.size()) {
+                    this.cancel();
+                    cancelled = true;
+                }
             }
         }.runTaskTimer(plugin, 1L, 1L);
     }
