@@ -19,7 +19,7 @@ public final class CommonAction {
             super(msg);
         }
         @Override
-        @LangKey public String getMessage(){
+        @LangKey(skipCheck = true) public String getMessage(){
             return super.getMessage();
         }
     }

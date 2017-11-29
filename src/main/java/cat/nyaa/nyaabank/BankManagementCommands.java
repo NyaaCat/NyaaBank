@@ -14,6 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.librazy.nyaautils_lang_checker.LangKey;
 
 import java.util.HashMap;
 import java.util.List;
@@ -45,8 +46,8 @@ public class BankManagementCommands extends CommandReceiver {
      * @param permissionLang language key for wrong ownership
      * @return the bank
      */
-    private BankRegistration getBankWithPermission(CommandSender sender, long idNumber, String noBankLang,
-                                                   String adminPermission, String permissionLang) {
+    private BankRegistration getBankWithPermission(CommandSender sender, long idNumber, @LangKey String noBankLang,
+                                                   String adminPermission, @LangKey String permissionLang) {
         BankRegistration bank = plugin.dbm.getBankByIdNumber(idNumber);
         if (bank == null) throw new BadCommandException(noBankLang);
         if (sender instanceof Player) {
