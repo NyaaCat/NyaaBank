@@ -155,7 +155,7 @@ public class BankManagementCommands extends CommandReceiver {
                 }
                 bank.savingInterestNext = newSaving;
                 plugin.dbm.query(BankRegistration.class)
-                        .whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
+                        .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
                         .update(bank, BankRegistration.N_INTEREST_RATE_SAVING_NEXT);
                 break;
             }
@@ -171,7 +171,7 @@ public class BankManagementCommands extends CommandReceiver {
                 }
                 bank.debitInterestNext = newLoan;
                 plugin.dbm.query(BankRegistration.class)
-                        .whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
+                        .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
                         .update(bank, BankRegistration.N_INTEREST_RATE_DEBIT_NEXT);
                 break;
             }
@@ -179,7 +179,7 @@ public class BankManagementCommands extends CommandReceiver {
                 InterestType newType = args.nextEnum(InterestType.class);
                 bank.interestTypeNext = newType;
                 plugin.dbm.query(BankRegistration.class)
-                        .whereEq(BankRegistration.N_BANK_ID, bank.bankId.toString())
+                        .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
                         .update(bank, BankRegistration.N_INTEREST_TYPE_NEXT);
                 break;
             }
@@ -196,7 +196,7 @@ public class BankManagementCommands extends CommandReceiver {
         Map<UUID, BankAccount> accounts = new HashMap<>();
         Multimap<UUID, PartialRecord> partials = HashMultimap.create();
         for (BankAccount a : plugin.dbm.query(BankAccount.class)
-                .whereEq(BankAccount.N_BANK_ID, bank.bankId).select()) {
+                .whereEq(BankAccount.N_BANK_ID, bank.getBankId()).select()) {
             if (accounts.containsKey(a.playerId)) {
                 plugin.getLogger().severe(String.format("Multiple accounts bank-id=%s, player-id=%s",
                         bank.bankId.toString(), a.playerId));
@@ -204,7 +204,7 @@ public class BankManagementCommands extends CommandReceiver {
             accounts.put(a.playerId, a);
         }
         for (PartialRecord p : plugin.dbm.query(PartialRecord.class)
-                .whereEq(PartialRecord.N_BANK_ID, bank.bankId).select()) {
+                .whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).select()) {
             partials.put(p.playerId, p);
         }
 

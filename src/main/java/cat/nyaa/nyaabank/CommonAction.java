@@ -63,12 +63,12 @@ public final class CommonAction {
                 account.deposit = 0D;
                 account.deposit_interest = 0D;
                 plugin.dbm.query(BankAccount.class)
-                        .whereEq(BankAccount.N_ACCOUNT_ID, account.accountId)
+                        .whereEq(BankAccount.N_ACCOUNT_ID, account.getAccountId())
                         .update(account, BankAccount.N_DEPOSIT, BankAccount.N_DEPOSIT_INTEREST);
             }
             plugin.dbm.query(PartialRecord.class)
-                    .whereEq(PartialRecord.N_BANK_ID, bank.bankId.toString())
-                    .whereEq(PartialRecord.N_PLAYER_ID, player.getUniqueId())
+                    .whereEq(PartialRecord.N_BANK_ID, bank.getBankId())
+                    .whereEq(PartialRecord.N_PLAYER_ID, player.getUniqueId().toString())
                     .whereEq(PartialRecord.N_TRANSACTION_TYPE, TransactionType.DEPOSIT.name())
                     .delete();
             plugin.eco.withdrawPlayer(banker, totalDeposit);
@@ -88,13 +88,13 @@ public final class CommonAction {
                 if (amount > r.capital) {
                     amount -= r.capital;
                     realAmount += r.capital;
-                    plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_TRANSACTION_ID, r.transactionId.toString()).delete();
+                    plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_TRANSACTION_ID, r.getTransactionId()).delete();
                     idx++;
                 } else {
                     realAmount += amount;
                     r.capital -= amount;
                     amount = -1;
-                    plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_TRANSACTION_ID, r.transactionId.toString())
+                    plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_TRANSACTION_ID, r.getTransactionId())
                             .update(r, PartialRecord.N_CAPITAL);
                 }
             }
@@ -174,12 +174,12 @@ public final class CommonAction {
                 account.loan = 0D;
                 account.loan_interest = 0D;
                 plugin.dbm.query(BankAccount.class)
-                        .whereEq(BankAccount.N_ACCOUNT_ID, account.accountId)
+                        .whereEq(BankAccount.N_ACCOUNT_ID, account.getAccountId())
                         .update(account, BankAccount.N_LOAN, BankAccount.N_LOAN_INTEREST);
             }
             plugin.dbm.query(PartialRecord.class)
-                    .whereEq(PartialRecord.N_BANK_ID, bank.bankId.toString())
-                    .whereEq(PartialRecord.N_PLAYER_ID, player.getUniqueId())
+                    .whereEq(PartialRecord.N_BANK_ID, bank.getBankId())
+                    .whereEq(PartialRecord.N_PLAYER_ID, player.getUniqueId().toString())
                     .whereEq(PartialRecord.N_TRANSACTION_TYPE, TransactionType.LOAN.name())
                     .delete();
             plugin.eco.depositPlayer(banker, totalLoan);
@@ -199,13 +199,13 @@ public final class CommonAction {
                 if (amount > r.capital) {
                     amount -= r.capital;
                     realAmount += r.capital;
-                    plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_TRANSACTION_ID, r.transactionId.toString()).delete();
+                    plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_TRANSACTION_ID, r.getTransactionId()).delete();
                     idx++;
                 } else {
                     realAmount += amount;
                     r.capital -= amount;
                     amount = -1;
-                    plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_TRANSACTION_ID, r.transactionId.toString())
+                    plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_TRANSACTION_ID, r.getTransactionId())
                             .update(r, PartialRecord.N_CAPITAL);
                 }
             }
