@@ -1,182 +1,171 @@
 command:
   reg:
-    name_duplicate: "指定的银行名称已存在"
-    established: "(#%d) 银行 `%s&r` 创建成功，ID 为 {%s}"
-    not_enough_capital: "玩家没有足够的现金用于创建银行"
+    name_duplicate: 指定的银行名称已存在
+    established: (#%d) 银行 `%s&r` 创建成功，ID 为 {%s}
+    not_enough_capital: 玩家没有足够的现金用于创建银行
   top:
-    list_item: "%3d. %s&r(%.2f) {%s}"
+    list_item: '%3d. %s&r(%.2f) {%s}'
   list_my:
-    list_item: "银行：%s&r 存款：%.2f 贷款：%.2f"
-    empty_list: "你尚未开立任何银行账户"
+    list_item: 银行：%s&r 存款：%.2f 贷款：%.2f
+    empty_list: 你尚未开立任何银行账户
   bankrupt:
-    player_not_found: "找不到指定的玩家"
-    bank_not_found: "找不到指定的银行，或结果不唯一"
+    player_not_found: 找不到指定的玩家
+    bank_not_found: 找不到指定的银行，或结果不唯一
   reload:
-    complete: "重新加载成功"
-
+    complete: 重新加载成功
   bank_list:
-    list_player: "=== %s 的银行 ==="
-    list_all: "=== 所有银行列表 ==="
-    list_item: "(#%d) %s {所有者：%s，银行ID：%s}"
-    list_empty: "暂无已注册的银行"
+    list_player: === %s 的银行 ===
+    list_all: === 所有银行列表 ===
+    list_item: (#%d) %s {所有者：%s，银行ID：%s}
+    list_empty: 暂无已注册的银行
   bank_info:
-    no_such_bank: "找不到指定的银行，或结果不唯一"
-    only_self: "你没有权限执行此操作"
-    info: |
-      银行名称    ：%s
-      银行ID      ：%s
-      所有者名称  ：%s
-      所有者ID    ：%s
-      创立时间    ：%s
-      当前状态    ：%s
-      总行注册地点：%.2f
-      储蓄利率    ：%f%%
-      贷款利率    ：%f%%
-      利息类型    ：%s
-      下期存款利率：%f%%
-      下期贷款利率：%f%%
-      下期利息类型：%s
-  bank_interest:
-    no_such_bank: "找不到指定的银行，或结果不唯一"
-    only_self: "你没有权限执行此操作"
-    rate_out_of_range: "利率超出允许的范围：[%.2f, %.2f]"
-    bankrupted: "不能对指定的银行执行此操作，因为此银行已破产"
-  bank_customers:
-    no_such_bank: "找不到指定的银行，或结果不唯一"
-    only_self: "你没有权限执行此操作"
-    customer_record: "%s：存款【%.2f】贷款【%.2f】"
-    no_customer: "暂无客户记录"
-  bank_vault:
-    no_such_bank: "找不到指定的银行，或结果不唯一"
-    only_self: "你没有权限执行此操作"
-    vault_insufficient: "此银行的库存金没有足够的余额"
-    player_insufficient: "你没有足够的现金"
-    bankrupted: "不能对指定的银行执行此操作，因为此银行已破产"
+    no_such_bank: 找不到指定的银行，或结果不唯一
+    only_self: 你没有权限执行此操作
+    info: '银行名称    ：%s
 
+      银行ID      ：%s
+
+      所有者名称  ：%s
+
+      所有者ID    ：%s
+
+      创立时间    ：%s
+
+      当前状态    ：%s
+
+      总行注册地点：%.2f
+
+      储蓄利率    ：%f%%
+
+      贷款利率    ：%f%%
+
+      利息类型    ：%s
+
+      下期存款利率：%f%%
+
+      下期贷款利率：%f%%
+
+      下期利息类型：%s
+
+      '
+  bank_interest:
+    no_such_bank: 找不到指定的银行，或结果不唯一
+    only_self: 你没有权限执行此操作
+    rate_out_of_range: 利率超出允许的范围：[%.2f, %.2f]
+    bankrupted: 不能对指定的银行执行此操作，因为此银行已破产
+  bank_customers:
+    no_such_bank: 找不到指定的银行，或结果不唯一
+    only_self: 你没有权限执行此操作
+    customer_record: '%s：存款【%.2f】贷款【%.2f】'
+    no_customer: 暂无客户记录
+  bank_vault:
+    no_such_bank: 找不到指定的银行，或结果不唯一
+    only_self: 你没有权限执行此操作
+    vault_insufficient: 此银行的库存金没有足够的余额
+    player_insufficient: 你没有足够的现金
+    bankrupted: 不能对指定的银行执行此操作，因为此银行已破产
 user:
   deposit:
-    invalid_amount: "存款金额无效"
-    not_enough_money: "你没有足够的现金"
-    bank_not_found: "找不到指定的银行，或结果不唯一"
-    bankrupted: "不能对指定的银行执行此操作，因为此银行已破产"
+    invalid_amount: 存款金额无效
+    not_enough_money: 你没有足够的现金
+    bank_not_found: 找不到指定的银行，或结果不唯一
+    bankrupted: 不能对指定的银行执行此操作，因为此银行已破产
   withdraw:
-    invalid_amount: "取款金额无效"
-    bank_not_found: "找不到指定的银行，或结果不唯一"
-    not_enough_deposit: "取款金额超出了存款余额"
-    bank_run: "银行没有足够的资金"
-    bankrupted: "不能对指定的银行执行此操作，因为此银行已破产"
+    invalid_amount: 取款金额无效
+    bank_not_found: 找不到指定的银行，或结果不唯一
+    not_enough_deposit: 取款金额超出了存款余额
+    bank_run: 银行没有足够的资金
+    bankrupted: 不能对指定的银行执行此操作，因为此银行已破产
   loan:
-    invalid_amount: "贷款金额无效"
-    bank_not_found: "找不到指定的银行，或结果不唯一"
-    has_loan: "你尚未清偿上期贷款，暂不能申请新的贷款"
-    not_enough_money_bank: "银行没有足够的资金"
-    bankrupted: "不能对指定的银行执行此操作，因为此银行已破产"
+    invalid_amount: 贷款金额无效
+    bank_not_found: 找不到指定的银行，或结果不唯一
+    has_loan: 你尚未清偿上期贷款，暂不能申请新的贷款
+    not_enough_money_bank: 银行没有足够的资金
+    bankrupted: 不能对指定的银行执行此操作，因为此银行已破产
   repay:
-    invalid_amount: "偿还金额无效"
-    bank_not_found: "找不到指定的银行，或结果不唯一"
-    no_need_to_pay: "数值超出了应偿还金额的上限"
-    not_enough_money: "你没有足够的现金"
-    bankrupted: "不能对指定的银行执行此操作，因为此银行已破产"
+    invalid_amount: 偿还金额无效
+    bank_not_found: 找不到指定的银行，或结果不唯一
+    no_need_to_pay: 数值超出了应偿还金额的上限
+    not_enough_money: 你没有足够的现金
+    bankrupted: 不能对指定的银行执行此操作，因为此银行已破产
   sign:
-    invalid_sign: "该银行业务牌无效"
-    invalid_number: "数值无效"
-    input_timeout: "输入超时，操作已取消"
-    loan_cancelled: "已取消贷款操作"
-    create_success: "银行业务牌创建成功"
-    create_fail: "设置银行业务牌失败"
-    input_accepted: "交易已接受"
-    break_no_permission: "你不能破坏这个银行业务牌"
-    break_success: "撤销银行业务牌成功"
-    use_no_permission: "你没有权限使用这个银行业务牌"
-    bankrupted: "不能对指定的银行执行此操作，因为此银行已破产"
-
-    text_saving: "储蓄业务"
-    text_withdraw: "取款业务"
-    text_loan: "贷款业务"
-    text_repay: "偿还贷款"
-
-    hint_saving: "利率：%.2f%%"
-    hint_withdraw: "手续费：%.2f"
-    hint_loan: "%.2f/%.2f%%"
-    hint_repay: "手续费：%.2f"
-
-    input_prompt_deposit: "请在 %d 秒内输入你要存入的金额"
-    input_prompt_withdraw: "请在 %d 秒内输入你要取出的金额（或输入 ALL 取出全部存款）"
-    input_prompt_loan: "请在 %d 秒内输入 CONFIRM 来确认此操作"
-    input_prompt_repay: "请在 %d 秒内输入你要偿还的金额（或输入 ALL 偿还全部贷款）"
-
+    invalid_sign: 该银行业务牌无效
+    invalid_number: 数值无效
+    input_timeout: 输入超时，操作已取消
+    loan_cancelled: 已取消贷款操作
+    create_success: 银行业务牌创建成功
+    create_fail: 设置银行业务牌失败
+    input_accepted: 交易已接受。
+    break_no_permission: 你不能破坏这个银行业务牌
+    break_success: 撤销银行业务牌成功
+    use_no_permission: 你没有权限使用这个银行业务牌
+    bankrupted: 不能对指定的银行执行此操作，因为此银行已破产
+    text_saving: 储蓄业务
+    text_withdraw: 取款业务
+    text_loan: 贷款业务
+    text_repay: 偿还贷款
+    hint_saving: 利率：%.2f%%
+    hint_withdraw: 手续费：%.2f
+    hint_loan: '%.2f/%.2f%%'
+    hint_repay: 手续费：%.2f
+    input_prompt_deposit: 请在 %d 秒内输入你要存入的金额
+    input_prompt_withdraw: 请在 %d 秒内输入你要取出的金额（或输入 ALL 取出全部存款）
+    input_prompt_loan: 请在 %d 秒内输入 CONFIRM 来确认此操作
+    input_prompt_repay: 请在 %d 秒内输入你要偿还的金额（或输入 ALL 偿还全部贷款）
 manual:
-  no_description: "暂无介绍"
-  no_usage: "暂无用法说明"
-
+  no_description: 无描述
+  no_usage: 无用法说明
   help:
-    description: "显示帮助信息"
-    usage: "/nb [子命令] help"
-
+    description: 展示帮助文本
+    usage: /nb [子命令] help
   bank:
-    description: "管理银行"
-    usage: "/nb bank [子命令] [参数]"
-
+    description: 管理银行
+    usage: /nb bank [子命令] [参数]
     list:
-      description: "列出银行"
-      usage: "/nb bank list [玩家名称]"
-
+      description: 列出银行
+      usage: /nb bank list [玩家名称]
     info:
-      desctiption: "显示银行信息"
-      usage: "/nb bank info <银行ID>"
-
+      desctiption: 显示银行信息
+      usage: /nb bank info <银行ID>
     interest:
-      description: "修改利率"
-      usage: "/nb bank interest <银行ID> [SAVING|LOAN|TYPE] <float-hundred-percent|SIMPLE|COMPOUND>"
-
+      description: 修改利率。
+      usage: /nb bank interest <银行ID> [SAVING|LOAN|TYPE] <float-hundred-percent|SIMPLE|COMPOUND>
     customers:
-      description: "列出所有客户"
-      usage: "/nb bank customers <银行ID>"
-
+      description: 列出所有客户
+      usage: /nb bank customers <银行ID>
     vault:
-      description: "将款项存入银行库存金"
-      usage: "/nb bank vault <金额> <银行ID>"
-
+      description: 将款项存入银行库存金
+      usage: /nb bank vault <金额> <银行ID>
   reg:
-    description: "注册新银行，并指定百分比值的利息"
-    usage: "/nb reg <所有者名称> <银行名称> <银行总部所在地> <存款利息> <贷款利息> <利息类型：SIMPLE|COMPOUND>"
-
+    description: 注册新银行，并指定百分比值的利息
+    usage: /nb reg <所有者名称> <银行名称> <银行总部所在地> <存款利息> <贷款利息> <利息类型：SIMPLE|COMPOUND>
   top:
-    description: "按总部所在地列出银行"
-    usage: "/nb top"
-
+    description: 按总部所在地列出银行
+    usage: /nb top
   bankrupt:
-    description: "将玩家或银行设置为破产状态"
-    usage: "/nb bankrupt <player|bank> <玩家名称|银行ID>"
-
+    description: 将玩家或银行设置为破产状态
+    usage: /nb bankrupt <player|bank> <玩家名称|银行ID>
   my:
-    description: "列出个人账户信息"
-    usage: "/nb my [玩家名称]"
-
+    description: 列出个人账户信息
+    usage: /nb my [玩家名称]
   deposit:
-    description: "向某家银行存款"
-    usage: "/nb deposit <金额> <银行ID>"
-
+    description: 向某家银行存款
+    usage: /nb deposit <金额> <银行ID>
   withdraw:
-    description: "从某家银行取款"
-    usage: "/nb withdraw <金额|ALL> <银行ID>"
-
+    description: 从某家银行取款
+    usage: /nb withdraw <金额|ALL> <银行ID>
   loan:
-    description: "向银行贷款"
-    usage: "/nb loan <金额> <银行ID>"
-
+    description: 向银行贷款
+    usage: /nb loan <金额> <银行ID>
   repay:
-    description: "偿还贷款"
-    usage: "/nb repay <金额|ALL> <银行ID>"
-
+    description: 偿还贷款
+    usage: /nb repay <金额|ALL> <银行ID>
   reload:
-    description: "重新加载插件"
-    usage: "/nb reload"
-
+    description: 重新加载插件
+    usage: /nb reload
   _check:
-    description: "【警告！仅供调试使用】强制运行Checkpoint Routine"
-    usage: "/nb _check"
-
+    description: 【警告！仅供调试使用】强制运行Checkpoint Routine
+    usage: /nb _check
   _benchmark:
-    description: "【警告！执行此命令将销毁数据】测试数据库性能"
-    usage: "/nb _benchmark"
+    description: 【警告！执行此命令将销毁数据】测试数据库性能
+    usage: /nb _benchmark
