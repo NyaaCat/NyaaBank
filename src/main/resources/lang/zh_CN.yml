@@ -116,7 +116,7 @@ manual:
   no_description: 无描述
   no_usage: 无用法说明
   help:
-    description: 展示帮助文本
+    description: 显示帮助信息
     usage: /nb [子命令] help
   bank:
     description: 管理银行
