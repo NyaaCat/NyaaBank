@@ -7,6 +7,7 @@ import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
 import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import cat.nyaa.nyaabank.signs.SignHelper;
+import cat.nyaa.nyaacore.database.Query;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -51,7 +52,7 @@ public class CycleManager {
             long delay = nextCheckpoint - now;
             new CheckPointTask(delay);
 
-            SignHelper.batchUpdateSign(plugin, plugin.dbm.query(SignRegistration.class).select());
+            SignHelper.batchUpdateSign(plugin, plugin.dbm.db.query(SignRegistration.class).select());
             // TODO we may not need to update all signs
         }
     }
@@ -115,15 +116,15 @@ public class CycleManager {
         // TODO run in another thread?
 
         // Transaction start
-        plugin.dbm.disableAutoCommit();
+        plugin.dbm.db.disableAutoCommit();
 
         Map<UUID, Map<UUID, BankAccount>> accountMap = new HashMap<>(); // Map<bankId, Map<playerId, Account>>
         Map<UUID, BankRegistration> bankMap = new HashMap<>(); // Map<bankId, BankReg>
-        for (BankAccount a : plugin.dbm.query(BankAccount.class).select()) {
+        for (BankAccount a : plugin.dbm.db.query(BankAccount.class).select()) {
             if (!accountMap.containsKey(a.bankId)) accountMap.put(a.bankId, new HashMap<>());
             accountMap.get(a.bankId).put(a.playerId, a);
         }
-        for (BankRegistration r : plugin.dbm.query(BankRegistration.class).select()) {
+        for (BankRegistration r : plugin.dbm.db.query(BankRegistration.class).select()) {
             bankMap.put(r.bankId, r);
         }
         // compute BankAccounts
@@ -179,7 +180,7 @@ public class CycleManager {
         }
 
         // compute Partial Records
-        for (PartialRecord partial : plugin.dbm.query(PartialRecord.class).select()) {
+        for (PartialRecord partial : plugin.dbm.db.query(PartialRecord.class).select()) {
             BankRegistration bank = bankMap.get(partial.bankId);
             if (bank.status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
             OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
@@ -261,7 +262,7 @@ public class CycleManager {
                 if (!accountMap.containsKey(account.bankId))
                     accountMap.put(account.bankId, new HashMap<>());
                 accountMap.get(account.bankId).put(account.playerId, account);
-                plugin.dbm.query(BankAccount.class).insert(account);
+                plugin.dbm.db.query(BankAccount.class).insert(account);
             }
         }
 
@@ -274,19 +275,19 @@ public class CycleManager {
         }
 
         // write to database
-        DatabaseManager.Query<BankRegistration> query1 = plugin.dbm.query(BankRegistration.class);
+        Query<BankRegistration> query1 = plugin.dbm.db.query(BankRegistration.class);
         for (BankRegistration bank : bankMap.values()) {
             query1.clear().whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank);
         }
-        DatabaseManager.Query<BankAccount> query2 = plugin.dbm.query(BankAccount.class);
+        Query<BankAccount> query2 = plugin.dbm.db.query(BankAccount.class);
         for (Map<UUID, BankAccount> m : accountMap.values()) {
             for (BankAccount account : m.values()) {
                 query2.clear().whereEq(BankAccount.N_ACCOUNT_ID, account.getAccountId()).update(account);
             }
         }
-        plugin.dbm.query(PartialRecord.class).delete();
+        plugin.dbm.db.query(PartialRecord.class).delete();
 
         // Transaction finish
-        plugin.dbm.enableAutoCommit();
+        plugin.dbm.db.enableAutoCommit();
     }
 }

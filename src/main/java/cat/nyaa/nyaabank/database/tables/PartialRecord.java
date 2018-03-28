@@ -1,15 +1,15 @@
 package cat.nyaa.nyaabank.database.tables;
 
 import cat.nyaa.nyaabank.database.enums.TransactionType;
-import cat.nyaa.nyaacore.database.DataColumn;
-import cat.nyaa.nyaacore.database.DataTable;
-import cat.nyaa.nyaacore.database.PrimaryKey;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
 /* New deposit or loan */
-@DataTable("partial_transactions")
+@Table(name = "partial_transactions")
 public class PartialRecord {
     // Data column names
     public static final String N_CAPITAL = "capital";
@@ -23,12 +23,12 @@ public class PartialRecord {
     public UUID bankId;
     public UUID playerId;
     public Instant startDate; // Stored as Unix timestamp ms
-    @DataColumn(N_CAPITAL)
+    @Column(name = N_CAPITAL)
     public Double capital;
     public TransactionType type; // deposit or loan
 
-    @DataColumn(N_TRANSACTION_ID)
-    @PrimaryKey
+    @Column(name = N_TRANSACTION_ID)
+    @Id
     public String getTransactionId() {
         return transactionId.toString();
     }
@@ -37,7 +37,7 @@ public class PartialRecord {
         this.transactionId = UUID.fromString(transactionId);
     }
 
-    @DataColumn(N_BANK_ID)
+    @Column(name = N_BANK_ID)
     public String getBankId() {
         return bankId.toString();
     }
@@ -46,7 +46,7 @@ public class PartialRecord {
         this.bankId = UUID.fromString(bankId);
     }
 
-    @DataColumn(N_PLAYER_ID)
+    @Column(name = N_PLAYER_ID)
     public String getPlayerId() {
         return playerId.toString();
     }
@@ -55,7 +55,7 @@ public class PartialRecord {
         this.playerId = UUID.fromString(playerId);
     }
 
-    @DataColumn(N_START_DATE)
+    @Column(name = N_START_DATE)
     public Long getStartDate() {
         return startDate.toEpochMilli();
     }
@@ -64,7 +64,7 @@ public class PartialRecord {
         this.startDate = Instant.ofEpochMilli(startDate);
     }
 
-    @DataColumn(N_TRANSACTION_TYPE)
+    @Column(name = N_TRANSACTION_TYPE)
     public String getType() {
         return type.toString();
     }

@@ -2,15 +2,15 @@ package cat.nyaa.nyaabank.database.tables;
 
 import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.enums.InterestType;
-import cat.nyaa.nyaacore.database.DataColumn;
-import cat.nyaa.nyaacore.database.DataTable;
-import cat.nyaa.nyaacore.database.PrimaryKey;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
 /* Information about the bank */
-@DataTable("bank_registration")
+@Table(name = "bank_registration")
 public class BankRegistration {
     // Data column names
     public static final String N_ID_NUMBER = "id_number";
@@ -29,19 +29,19 @@ public class BankRegistration {
 
     public UUID bankId;
     public UUID ownerId;
-    @DataColumn(N_ID_NUMBER)
+    @Column(name = N_ID_NUMBER)
     public Long idNumber; // short identifier for human input
-    @DataColumn(N_BANK_NAME)
+    @Column(name = N_BANK_NAME)
     public String name;
-    @DataColumn(N_REGISTERED_CAPITAL)
+    @Column(name = N_REGISTERED_CAPITAL)
     public Double registered_capital;
-    @DataColumn(N_INTEREST_RATE_SAVING)
+    @Column(name = N_INTEREST_RATE_SAVING)
     public Double savingInterest; // default saving interest, hundred percent
-    @DataColumn(N_INTEREST_RATE_DEBIT)
+    @Column(name = N_INTEREST_RATE_DEBIT)
     public Double debitInterest; // default loan interest, hundred percent
-    @DataColumn(N_INTEREST_RATE_SAVING_NEXT)
+    @Column(name = N_INTEREST_RATE_SAVING_NEXT)
     public Double savingInterestNext; // saving interest for next cycle, hundred percent
-    @DataColumn(N_INTEREST_RATE_DEBIT_NEXT)
+    @Column(name = N_INTEREST_RATE_DEBIT_NEXT)
     public Double debitInterestNext; // loan interest for next cycle, hundred percent
 
     public Instant establishDate; // Stored as human readable string
@@ -49,8 +49,8 @@ public class BankRegistration {
     public InterestType interestType;
     public InterestType interestTypeNext;
 
-    @DataColumn(N_BANK_ID)
-    @PrimaryKey
+    @Column(name = N_BANK_ID)
+    @Id
     public String getBankId() {
         return bankId.toString();
     }
@@ -59,7 +59,7 @@ public class BankRegistration {
         this.bankId = UUID.fromString(bankId);
     }
 
-    @DataColumn(N_OWNER_ID)
+    @Column(name = N_OWNER_ID)
     public String getOwnerId() {
         return ownerId.toString();
     }
@@ -68,7 +68,7 @@ public class BankRegistration {
         this.ownerId = UUID.fromString(ownerId);
     }
 
-    @DataColumn(N_ESTABLISH_DATE)
+    @Column(name = N_ESTABLISH_DATE)
     public String getEstablishDate() {
         return establishDate.toString();
     }
@@ -77,7 +77,7 @@ public class BankRegistration {
         this.establishDate = Instant.parse(establishDate);
     }
 
-    @DataColumn(N_BANK_STATUS)
+    @Column(name = N_BANK_STATUS)
     public String getStatus() {
         return status.toString();
     }
@@ -86,7 +86,7 @@ public class BankRegistration {
         this.status = BankStatus.valueOf(status);
     }
 
-    @DataColumn(N_INTEREST_TYPE)
+    @Column(name = N_INTEREST_TYPE)
     public String getInterestType() {
         return interestType.toString();
     }
@@ -95,7 +95,7 @@ public class BankRegistration {
         this.interestType = InterestType.valueOf(interestType);
     }
 
-    @DataColumn(N_INTEREST_TYPE_NEXT)
+    @Column(name = N_INTEREST_TYPE_NEXT)
     public String getInterestTypeNext() {
         return interestTypeNext.toString();
     }

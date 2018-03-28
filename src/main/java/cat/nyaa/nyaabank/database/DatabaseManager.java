@@ -2,41 +2,24 @@ package cat.nyaa.nyaabank.database;
 
 import cat.nyaa.nyaabank.NyaaBank;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
-import cat.nyaa.nyaabank.database.tables.*;
-import cat.nyaa.nyaacore.database.SQLiteDatabase;
-import org.bukkit.plugin.java.JavaPlugin;
+import cat.nyaa.nyaabank.database.tables.BankAccount;
+import cat.nyaa.nyaabank.database.tables.BankRegistration;
+import cat.nyaa.nyaabank.database.tables.PartialRecord;
+import cat.nyaa.nyaabank.database.tables.TransactionLog;
+import cat.nyaa.nyaacore.database.DatabaseUtils;
+import cat.nyaa.nyaacore.database.RelationalDB;
 
 import java.util.List;
 import java.util.UUID;
 
-public class DatabaseManager extends SQLiteDatabase {
+public class DatabaseManager implements Cloneable {
     private final NyaaBank plugin;
+    public final RelationalDB db;
 
     public DatabaseManager(NyaaBank plugin) {
-        super();
+        db = DatabaseUtils.get();
         this.plugin = plugin;
-        connect();
-    }
-
-    @Override
-    protected String getFileName() {
-        return "nyaabank.db";
-    }
-
-    @Override
-    protected JavaPlugin getPlugin() {
-        return plugin;
-    }
-
-    @Override
-    protected Class<?>[] getTables() {
-        return new Class<?>[]{
-                BankRegistration.class,
-                BankAccount.class,
-                SignRegistration.class,
-                PartialRecord.class,
-                TransactionLog.class
-        };
+        db.connect();
     }
 
     /**
@@ -48,9 +31,9 @@ public class DatabaseManager extends SQLiteDatabase {
      */
     public BankRegistration getUniqueBank(String partialUUID) {
         if (partialUUID == null || "".equals(partialUUID)) return null;
-        List<BankRegistration> r = query(BankRegistration.class)
-                .where(BankRegistration.N_BANK_ID, " LIKE ", "%" + partialUUID + "%")
-                .select();
+        List<BankRegistration> r = db.query(BankRegistration.class)
+                                     .where(BankRegistration.N_BANK_ID, " LIKE ", "%" + partialUUID + "%")
+                                     .select();
         if (r.size() > 1 || r.size() <= 0) return null;
         return r.get(0);
     }
@@ -61,14 +44,14 @@ public class DatabaseManager extends SQLiteDatabase {
      */
     public BankAccount getAccount(UUID bankId, UUID playerId) {
         BankAccount account = null;
-        List<BankAccount> l = query(BankAccount.class)
-                .whereEq(BankAccount.N_BANK_ID, bankId.toString())
-                .whereEq(BankAccount.N_PLAYER_ID, playerId.toString())
-                .select();
+        List<BankAccount> l = db.query(BankAccount.class)
+                                .whereEq(BankAccount.N_BANK_ID, bankId.toString())
+                                .whereEq(BankAccount.N_PLAYER_ID, playerId.toString())
+                                .select();
         if (l.size() > 0) {
             if (l.size() > 1) {
                 plugin.getLogger().severe("Duplicated account: bankid:" +
-                        bankId.toString() + " playerid:" + playerId.toString());
+                                                  bankId.toString() + " playerid:" + playerId.toString());
             }
             account = l.get(0);
         }
@@ -76,17 +59,17 @@ public class DatabaseManager extends SQLiteDatabase {
     }
 
     public List<PartialRecord> getPartialRecords(UUID bankId, UUID playerId, TransactionType type) {
-        return query(PartialRecord.class)
-                .whereEq(PartialRecord.N_BANK_ID, bankId.toString())
-                .whereEq(PartialRecord.N_PLAYER_ID, playerId.toString())
-                .whereEq(PartialRecord.N_TRANSACTION_TYPE, type.name())
-                .select();
+        return db.query(PartialRecord.class)
+                 .whereEq(PartialRecord.N_BANK_ID, bankId.toString())
+                 .whereEq(PartialRecord.N_PLAYER_ID, playerId.toString())
+                 .whereEq(PartialRecord.N_TRANSACTION_TYPE, type.name())
+                 .select();
     }
 
     /**
      * Get total deposit: deposit+interest+partial
      *
-     * @param bankId bank id
+     * @param bankId   bank id
      * @param playerId player id
      * @return total deposit
      */
@@ -105,7 +88,7 @@ public class DatabaseManager extends SQLiteDatabase {
     /**
      * Get total loan: loan+interest+partial
      *
-     * @param bankId bank id
+     * @param bankId   bank id
      * @param playerId player id
      * @return total loan
      */
@@ -126,7 +109,7 @@ public class DatabaseManager extends SQLiteDatabase {
      */
     public long getNextIdNumber() {
         long id = 1;
-        for (BankRegistration b : query(BankRegistration.class).select()) {
+        for (BankRegistration b : db.query(BankRegistration.class).select()) {
             if (b.idNumber >= id) id = b.idNumber + 1;
         }
         return id;
@@ -134,7 +117,7 @@ public class DatabaseManager extends SQLiteDatabase {
 
     public BankRegistration getBankByIdNumber(long idNumber) {
         try {
-            return query(BankRegistration.class).whereEq(BankRegistration.N_ID_NUMBER, idNumber).selectUnique();
+            return db.query(BankRegistration.class).whereEq(BankRegistration.N_ID_NUMBER, idNumber).selectUnique();
         } catch (RuntimeException ex) {
             // TODO ResultNotUniqueException
             if (ex.getMessage() != null && ex.getMessage().startsWith("SQL Selection")) {
@@ -145,34 +128,8 @@ public class DatabaseManager extends SQLiteDatabase {
         }
     }
 
-    public void disableAutoCommit() {
-        try {
-            getConnection().setAutoCommit(false);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public void enableAutoCommit() {
-        try {
-            getConnection().commit();
-            getConnection().setAutoCommit(true);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
-        }
-    }
-
     /* return a new log entry */
     public TransactionLog log(TransactionType type) {
         return new TransactionLog(this, type);
-    }
-
-    @Override
-    protected DatabaseManager clone() {
-        try {
-            return (DatabaseManager) super.clone();
-        } catch (CloneNotSupportedException ex) {
-            throw new RuntimeException(ex);
-        }
     }
 }

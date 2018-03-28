@@ -3,16 +3,16 @@ package cat.nyaa.nyaabank.database.tables;
 import cat.nyaa.nyaabank.database.DatabaseManager;
 import cat.nyaa.nyaabank.database.enums.AccountType;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
-import cat.nyaa.nyaacore.database.DataColumn;
-import cat.nyaa.nyaacore.database.DataTable;
-import cat.nyaa.nyaacore.database.PrimaryKey;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@DataTable("transaction_log")
+@Table(name = "transaction_log")
 public class TransactionLog {
     // Data column names
     public static final String N_ID = "id";
@@ -25,22 +25,22 @@ public class TransactionLog {
     public static final String N_TO_TYPE = "to_type";
     public static final String N_TRANSACTION_TYPE = "transaction_type";
 
-    @PrimaryKey
-    @DataColumn(N_ID)
+    @Id
+    @Column(name = N_ID)
     public Long id;
 
     public Instant time;
     public UUID from;
     public UUID to;
-    @DataColumn(N_CAPITAL)
+    @Column(name = N_CAPITAL)
     public Double capital;
     public AccountType fromType;
     public AccountType toType;
     public TransactionType type;
-    @DataColumn(N_EXTRA)
+    @Column(name = N_EXTRA)
     public String extra;
 
-    @DataColumn(N_TIME)
+    @Column(name = N_TIME)
     public String getTime() {
         return time.toString();
     }
@@ -49,7 +49,7 @@ public class TransactionLog {
         this.time = Instant.parse(time);
     }
 
-    @DataColumn(N_FROM_ID)
+    @Column(name = N_FROM_ID)
     public String getFrom() {
         return from.toString();
     }
@@ -58,7 +58,7 @@ public class TransactionLog {
         this.from = UUID.fromString(from);
     }
 
-    @DataColumn(N_TO_ID)
+    @Column(name = N_TO_ID)
     public String getTo() {
         return to.toString();
     }
@@ -67,7 +67,7 @@ public class TransactionLog {
         this.to = UUID.fromString(to);
     }
 
-    @DataColumn(N_FROM_TYPE)
+    @Column(name = N_FROM_TYPE)
     public String getFromType() {
         return fromType.toString();
     }
@@ -76,7 +76,7 @@ public class TransactionLog {
         this.fromType = AccountType.valueOf(fromType);
     }
 
-    @DataColumn(N_TO_TYPE)
+    @Column(name = N_TO_TYPE)
     public String getToType() {
         return toType.toString();
     }
@@ -85,7 +85,7 @@ public class TransactionLog {
         this.toType = AccountType.valueOf(toType);
     }
 
-    @DataColumn(N_TRANSACTION_TYPE)
+    @Column(name = N_TRANSACTION_TYPE)
     public String getType() {
         return type.toString();
     }
@@ -162,6 +162,6 @@ public class TransactionLog {
             }
         }
         extra = "{" + extra + "}";
-        dbm.query(TransactionLog.class).insert(this);
+        dbm.db.query(TransactionLog.class).insert(this);
     }
 }

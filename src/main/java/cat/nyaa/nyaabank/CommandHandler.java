@@ -10,7 +10,7 @@ import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import cat.nyaa.nyaabank.signs.SignHelper;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
-import cat.nyaa.nyaacore.database.BaseDatabase;
+import cat.nyaa.nyaacore.database.Query;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -53,7 +53,7 @@ public class CommandHandler extends CommandReceiver {
         }
         bankName = ChatColor.translateAlternateColorCodes('&', bankName);
 
-        List<BankRegistration> q = plugin.dbm.query(BankRegistration.class).select();
+        List<BankRegistration> q = plugin.dbm.db.query(BankRegistration.class).select();
         for (BankRegistration b : q) {
             if (SignHelper.stringEqIgnoreColor(bankName, b.name, true)) {
                 msg(sender, "command.reg.name_duplicate");
@@ -85,17 +85,17 @@ public class CommandHandler extends CommandReceiver {
         reg.savingInterestNext = savingInter;
         reg.debitInterest = debitInter;
         reg.debitInterestNext = debitInter;
-        plugin.dbm.query(BankRegistration.class).insert(reg);
+        plugin.dbm.db.query(BankRegistration.class).insert(reg);
         msg(sender, "command.reg.established", reg.idNumber, reg.name, reg.bankId.toString());
     }
 
     @SubCommand(value = "top", permission = "nb.top")
     public void topBanks(CommandSender sender, Arguments args) {
         // TODO use actual capital instead of registered_capital
-        List<BankRegistration> l = plugin.dbm.query(BankRegistration.class).select();
-        l.sort((a,b)->a.registered_capital.compareTo(b.registered_capital));
-        for (int i = l.size();i>=1;i--) {
-            BankRegistration b = l.get(i-1);
+        List<BankRegistration> l = plugin.dbm.db.query(BankRegistration.class).select();
+        l.sort((a, b) -> a.registered_capital.compareTo(b.registered_capital));
+        for (int i = l.size(); i >= 1; i--) {
+            BankRegistration b = l.get(i - 1);
             msg(sender, "command.top.list_item", i, b.name, b.registered_capital, b.getBankId());
         }
     }
@@ -107,10 +107,10 @@ public class CommandHandler extends CommandReceiver {
             pid = plugin.getServer().getOfflinePlayer(args.next()).getUniqueId();
         }
         if (pid == null) pid = asPlayer(sender).getUniqueId();
-        List<BankAccount> accounts = plugin.dbm.query(BankAccount.class)
-                .whereEq(BankAccount.N_PLAYER_ID, pid.toString()).select();
-        List<PartialRecord> partials = plugin.dbm.query(PartialRecord.class)
-                .whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).select();
+        List<BankAccount> accounts = plugin.dbm.db.query(BankAccount.class)
+                                               .whereEq(BankAccount.N_PLAYER_ID, pid.toString()).select();
+        List<PartialRecord> partials = plugin.dbm.db.query(PartialRecord.class)
+                                                 .whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).select();
 
         Map<UUID, Double> deposit = new HashMap<>();
         Map<UUID, Double> loan = new HashMap<>();
@@ -151,10 +151,10 @@ public class CommandHandler extends CommandReceiver {
                 throw new BadCommandException("command.bankrupt.player_not_found");
             }
             UUID pid = p.getUniqueId();
-            List<PartialRecord> partials = plugin.dbm.query(PartialRecord.class)
-                    .whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).select();
-            List<BankAccount> accounts = plugin.dbm.query(BankAccount.class)
-                    .whereEq(BankAccount.N_PLAYER_ID, pid.toString()).select();
+            List<PartialRecord> partials = plugin.dbm.db.query(PartialRecord.class)
+                                                     .whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).select();
+            List<BankAccount> accounts = plugin.dbm.db.query(BankAccount.class)
+                                                   .whereEq(BankAccount.N_PLAYER_ID, pid.toString()).select();
 
             Map<UUID, BankRegistration> cachedBanks = new HashMap<>();
             for (PartialRecord r : partials) {
@@ -168,14 +168,14 @@ public class CommandHandler extends CommandReceiver {
                     plugin.eco.withdrawPlayer(p, r.capital);
                     plugin.eco.depositPlayer(banker, r.capital);
                     plugin.dbm.log(REPAY).from(pid).to(bank.bankId).capital(r.capital)
-                            .extra("partialId", r.getTransactionId())
-                            .extra("bankrupt", "PLAYER").insert();
+                              .extra("partialId", r.getTransactionId())
+                              .extra("bankrupt", "PLAYER").insert();
                 } else if (r.type == TransactionType.DEPOSIT) {
                     plugin.eco.depositPlayer(p, r.capital);
                     plugin.eco.withdrawPlayer(banker, r.capital);
                     plugin.dbm.log(WITHDRAW).to(pid).from(bank.bankId).capital(r.capital)
-                            .extra("partialId", r.getTransactionId())
-                            .extra("bankrupt", "PLAYER").insert();
+                              .extra("partialId", r.getTransactionId())
+                              .extra("bankrupt", "PLAYER").insert();
                 }
             }
             for (BankAccount r : accounts) {
@@ -190,17 +190,17 @@ public class CommandHandler extends CommandReceiver {
                     plugin.eco.withdrawPlayer(p, -netDeposit);
                     plugin.eco.depositPlayer(banker, netDeposit);
                     plugin.dbm.log(REPAY).from(pid).to(bank.bankId).capital(-netDeposit)
-                            .extra("bankrupt", "PLAYER").insert();
+                              .extra("bankrupt", "PLAYER").insert();
                 } else { // bank owe player
                     plugin.eco.depositPlayer(p, netDeposit);
                     plugin.eco.withdrawPlayer(banker, netDeposit);
                     plugin.dbm.log(WITHDRAW).to(pid).from(bank.bankId).capital(netDeposit)
-                            .extra("bankrupt", "PLAYER").insert();
+                              .extra("bankrupt", "PLAYER").insert();
                 }
             }
 
-            plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).delete();
-            plugin.dbm.query(BankAccount.class).whereEq(BankAccount.N_PLAYER_ID, pid.toString()).delete();
+            plugin.dbm.db.query(PartialRecord.class).whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).delete();
+            plugin.dbm.db.query(BankAccount.class).whereEq(BankAccount.N_PLAYER_ID, pid.toString()).delete();
         } else if ("bank".equals(type)) {
             /* STEP 1: Force acquire all loan
              * STEP 2: Return all deposits
@@ -212,23 +212,23 @@ public class CommandHandler extends CommandReceiver {
             OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
 
             // STEP 1 & 2
-            List<PartialRecord> partials = plugin.dbm.query(PartialRecord.class)
-                    .whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).select();
-            List<BankAccount> accounts = plugin.dbm.query(BankAccount.class)
-                    .whereEq(BankAccount.N_BANK_ID, bank.getBankId()).select();
+            List<PartialRecord> partials = plugin.dbm.db.query(PartialRecord.class)
+                                                     .whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).select();
+            List<BankAccount> accounts = plugin.dbm.db.query(BankAccount.class)
+                                                   .whereEq(BankAccount.N_BANK_ID, bank.getBankId()).select();
             for (PartialRecord r : partials) {
                 if (r.type == TransactionType.LOAN) {
                     plugin.eco.depositPlayer(banker, r.capital);
                     plugin.eco.withdrawPlayer(plugin.getServer().getOfflinePlayer(r.playerId), r.capital);
                     plugin.dbm.log(REPAY).from(r.playerId).to(bank.bankId).capital(r.capital)
-                            .extra("partialId", r.getTransactionId())
-                            .extra("bankrupt", "BANK").insert();
+                              .extra("partialId", r.getTransactionId())
+                              .extra("bankrupt", "BANK").insert();
                 } else if (r.type == TransactionType.DEPOSIT) {
                     plugin.eco.withdrawPlayer(banker, r.capital);
                     plugin.eco.depositPlayer(plugin.getServer().getOfflinePlayer(r.playerId), r.capital);
                     plugin.dbm.log(WITHDRAW).to(r.playerId).from(bank.bankId).capital(r.capital)
-                            .extra("partialId", r.getTransactionId())
-                            .extra("bankrupt", "BANK").insert();
+                              .extra("partialId", r.getTransactionId())
+                              .extra("bankrupt", "BANK").insert();
                 }
             }
             for (BankAccount r : accounts) {
@@ -237,23 +237,23 @@ public class CommandHandler extends CommandReceiver {
                     plugin.eco.depositPlayer(banker, -netDeposit);
                     plugin.eco.withdrawPlayer(plugin.getServer().getOfflinePlayer(r.playerId), -netDeposit);
                     plugin.dbm.log(REPAY).from(r.playerId).to(bank.bankId).capital(-netDeposit)
-                            .extra("bankrupt", "BANK").insert();
+                              .extra("bankrupt", "BANK").insert();
                 } else {
                     plugin.eco.withdrawPlayer(banker, netDeposit);
                     plugin.eco.depositPlayer(plugin.getServer().getOfflinePlayer(r.playerId), netDeposit);
                     plugin.dbm.log(WITHDRAW).to(r.playerId).from(bank.bankId).capital(netDeposit)
-                            .extra("bankrupt", "BANK").insert();
+                              .extra("bankrupt", "BANK").insert();
                 }
             }
-            plugin.dbm.query(PartialRecord.class).whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).delete();
-            plugin.dbm.query(BankAccount.class).whereEq(BankAccount.N_BANK_ID, bank.getBankId()).delete();
+            plugin.dbm.db.query(PartialRecord.class).whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).delete();
+            plugin.dbm.db.query(BankAccount.class).whereEq(BankAccount.N_BANK_ID, bank.getBankId()).delete();
 
             // STEP 3
             plugin.eco.depositPlayer(banker, bank.registered_capital);
 
             // STEP 4
             bank.status = BankStatus.BANKRUPT;
-            plugin.dbm.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank);
+            plugin.dbm.db.query(BankRegistration.class).whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank);
             SignHelper.batchUpdateSign(plugin, bank);
         } else {
             throw new BadCommandException();
@@ -354,9 +354,9 @@ public class CommandHandler extends CommandReceiver {
 
     @SubCommand(value = "_check", permission = "nb.debug") // for debug only
     public void forceCheckPoint(CommandSender sender, Arguments args) {
-        sender.sendMessage(String.format("Cycle: %.2f%%", ((double)(plugin.cycle.getNextCheckpoint() - System.currentTimeMillis()))/(double)plugin.cfg.interestCycle*100D));
+        sender.sendMessage(String.format("Cycle: %.2f%%", ((double) (plugin.cycle.getNextCheckpoint() - System.currentTimeMillis())) / (double) plugin.cfg.interestCycle * 100D));
         plugin.cycle.updateDatabaseInterests(plugin.cycle.getNextCheckpoint(), plugin.cfg.interestCycle);
-        SignHelper.batchUpdateSign(plugin, plugin.dbm.query(SignRegistration.class).select());
+        SignHelper.batchUpdateSign(plugin, plugin.dbm.db.query(SignRegistration.class).select());
     }
 
     @SubCommand(value = "_benchmark", permission = "nb.debug") // for debug only
@@ -366,18 +366,18 @@ public class CommandHandler extends CommandReceiver {
         sender.sendMessage(String.format("#Bank: %d\n#Account per bank: %d", NUM_BANK, NUM_ACCOUT));
         sender.sendMessage("Inserting data ...");
         long startTime = System.currentTimeMillis();
-        plugin.dbm.disableAutoCommit();
-        plugin.dbm.query(BankRegistration.class).delete();
-        plugin.dbm.query(PartialRecord.class).delete();
-        plugin.dbm.query(BankAccount.class).delete();
+        plugin.dbm.db.disableAutoCommit();
+        plugin.dbm.db.query(BankRegistration.class).delete();
+        plugin.dbm.db.query(PartialRecord.class).delete();
+        plugin.dbm.db.query(BankAccount.class).delete();
         List<BankRegistration> banks = new ArrayList<>();
 
-        BaseDatabase.Query<BankRegistration> q = plugin.dbm.query(BankRegistration.class);
+        Query<BankRegistration> q = plugin.dbm.db.query(BankRegistration.class);
         for (int i = 0; i < NUM_BANK; i++) {
             BankRegistration reg = new BankRegistration();
             reg.bankId = UUID.randomUUID();
             reg.name = "Test bank " + Integer.toString(i);
-            reg.idNumber = (long)i;
+            reg.idNumber = (long) i;
             reg.ownerId = UUID.randomUUID();
             reg.registered_capital = 10000D;
             reg.establishDate = Instant.now();
@@ -392,7 +392,7 @@ public class CommandHandler extends CommandReceiver {
             banks.add(reg);
         }
 
-        BaseDatabase.Query<PartialRecord> q2 = plugin.dbm.query(PartialRecord.class);
+        Query<PartialRecord> q2 = plugin.dbm.db.query(PartialRecord.class);
         for (BankRegistration b : banks) {
             for (int i = 0; i < NUM_ACCOUT; i++) {
                 PartialRecord partial = new PartialRecord();
@@ -405,7 +405,7 @@ public class CommandHandler extends CommandReceiver {
                 q2.insert(partial);
             }
         }
-        plugin.dbm.enableAutoCommit();
+        plugin.dbm.db.enableAutoCommit();
         long endTime = System.currentTimeMillis();
         sender.sendMessage(String.format("Finished in %.2fs", (endTime - startTime) / 1000D));
 
@@ -420,8 +420,8 @@ public class CommandHandler extends CommandReceiver {
         plugin.cycle.updateDatabaseInterests(System.currentTimeMillis(), plugin.cfg.interestCycle);
         endTime = System.currentTimeMillis();
         sender.sendMessage(String.format("Finished in %.2fs", (endTime - startTime) / 1000D));
-        plugin.dbm.query(BankRegistration.class).delete();
-        plugin.dbm.query(PartialRecord.class).delete();
-        plugin.dbm.query(BankAccount.class).delete();
+        plugin.dbm.db.query(BankRegistration.class).delete();
+        plugin.dbm.db.query(PartialRecord.class).delete();
+        plugin.dbm.db.query(BankAccount.class).delete();
     }
 }

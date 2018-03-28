@@ -1,12 +1,11 @@
 package cat.nyaa.nyaabank.database.tables;
 
-import cat.nyaa.nyaacore.database.DataColumn;
-import cat.nyaa.nyaacore.database.DataTable;
-import cat.nyaa.nyaacore.database.PrimaryKey;
-
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.UUID;
 
-@DataTable("bank_accounts")
+@Table(name = "bank_accounts")
 public class BankAccount {
     // Data column names
     public static final String N_ACCOUNT_ID = "account_id";
@@ -20,18 +19,18 @@ public class BankAccount {
     public UUID accountId;
     public UUID bankId;
     public UUID playerId;
-    @DataColumn(N_DEPOSIT)
+    @Column(name = N_DEPOSIT)
     public Double deposit;
-    @DataColumn(N_DEPOSIT_INTEREST)
+    @Column(name = N_DEPOSIT_INTEREST)
     public Double deposit_interest;
-    @DataColumn(N_LOAN)
+    @Column(name = N_LOAN)
     public Double loan;
-    @DataColumn(N_LOAN_INTEREST)
+    @Column(name = N_LOAN_INTEREST)
     public Double loan_interest;
 
 
-    @DataColumn(N_ACCOUNT_ID)
-    @PrimaryKey
+    @Column(name = N_ACCOUNT_ID)
+    @Id
     public String getAccountId() {
         return accountId.toString();
     }
@@ -40,7 +39,7 @@ public class BankAccount {
         this.accountId = UUID.fromString(accountId);
     }
 
-    @DataColumn(N_BANK_ID)
+    @Column(name = N_BANK_ID)
     public String getBankId() {
         return bankId.toString();
     }
@@ -49,7 +48,7 @@ public class BankAccount {
         this.bankId = UUID.fromString(bankId);
     }
 
-    @DataColumn(N_PLAYER_ID)
+    @Column(name = N_PLAYER_ID)
     public String getPlayerId() {
         return playerId.toString();
     }

@@ -5,6 +5,10 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 repositories {
     jcenter()
     maven {
@@ -21,7 +25,7 @@ repositories {
     }
     maven {
         name 'NyaaCore'
-        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCore/maven-repo'
+        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCore/maven-repo-dev'
     }
     maven {
         name 'sk89q'
@@ -36,7 +40,7 @@ repositories {
 dependencies {
     compile 'org.spigotmc:spigot-api:1.12.1-R0.1-SNAPSHOT'
     compile 'net.milkbowl.vault:VaultAPI:1.6'
-    compile('cat.nyaa:nyaacore:4.1-SNAPSHOT') {
+    compile('cat.nyaa:nyaacore:5.0-SNAPSHOT') {
         transitive = false
     }
     compile 'org.librazy:NyaaUtilsLangChecker:1.0-SNAPSHOT'
