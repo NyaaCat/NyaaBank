@@ -23,7 +23,6 @@ deploy:
   file: ./NyaaBank-$TRAVIS_BRANCH-v$main_version.$TRAVIS_BUILD_NUMBER.jar
   on:
     tags: false
-    all_branches: true
 branches:
   except:
   - "/^*-v[0-9]/"
