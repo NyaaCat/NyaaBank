@@ -1,10 +1,12 @@
 package cat.nyaa.nyaabank.database.tables;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.UUID;
 
+@Entity
 @Table(name = "bank_accounts")
 public class BankAccount {
     // Data column names

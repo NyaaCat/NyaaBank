@@ -5,6 +5,7 @@ import cat.nyaa.nyaabank.database.enums.AccountType;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.Instant;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Entity
 @Table(name = "transaction_log")
 public class TransactionLog {
     // Data column names

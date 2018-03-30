@@ -4,12 +4,14 @@ import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.enums.InterestType;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
 /* Information about the bank */
+@Entity
 @Table(name = "bank_registration")
 public class BankRegistration {
     // Data column names

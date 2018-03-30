@@ -5,11 +5,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.UUID;
 
 /* Information about the signs in world map */
+@Entity
 @Table(name = "sign_registration")
 public class SignRegistration {
     // Data column names

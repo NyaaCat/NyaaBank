@@ -3,12 +3,14 @@ package cat.nyaa.nyaabank.database.tables;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
 
 import javax.persistence.Column;
+import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
 /* New deposit or loan */
+@Entity
 @Table(name = "partial_transactions")
 public class PartialRecord {
     // Data column names

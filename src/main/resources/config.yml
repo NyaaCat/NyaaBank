@@ -1,0 +1,6 @@
+database:
+    provider: sqlite
+    connection:
+        autoscan: true
+        package: cat.nyaa.nyaabank.database.tables
+        file: nyaabank.db
