@@ -31,7 +31,7 @@ public class DatabaseManager implements Cloneable {
      */
     public BankRegistration getUniqueBank(String partialUUID) {
         if (partialUUID == null || "".equals(partialUUID)) return null;
-        List<BankRegistration> r = db.query(BankRegistration.class)
+        List<BankRegistration> r = db.auto(BankRegistration.class)
                                      .where(BankRegistration.N_BANK_ID, " LIKE ", "%" + partialUUID + "%")
                                      .select();
         if (r.size() > 1 || r.size() <= 0) return null;
@@ -44,7 +44,7 @@ public class DatabaseManager implements Cloneable {
      */
     public BankAccount getAccount(UUID bankId, UUID playerId) {
         BankAccount account = null;
-        List<BankAccount> l = db.query(BankAccount.class)
+        List<BankAccount> l = db.auto(BankAccount.class)
                                 .whereEq(BankAccount.N_BANK_ID, bankId.toString())
                                 .whereEq(BankAccount.N_PLAYER_ID, playerId.toString())
                                 .select();
@@ -59,7 +59,7 @@ public class DatabaseManager implements Cloneable {
     }
 
     public List<PartialRecord> getPartialRecords(UUID bankId, UUID playerId, TransactionType type) {
-        return db.query(PartialRecord.class)
+        return db.auto(PartialRecord.class)
                  .whereEq(PartialRecord.N_BANK_ID, bankId.toString())
                  .whereEq(PartialRecord.N_PLAYER_ID, playerId.toString())
                  .whereEq(PartialRecord.N_TRANSACTION_TYPE, type.name())
@@ -109,7 +109,7 @@ public class DatabaseManager implements Cloneable {
      */
     public long getNextIdNumber() {
         long id = 1;
-        for (BankRegistration b : db.query(BankRegistration.class).select()) {
+        for (BankRegistration b : db.auto(BankRegistration.class).select()) {
             if (b.idNumber >= id) id = b.idNumber + 1;
         }
         return id;
@@ -117,9 +117,8 @@ public class DatabaseManager implements Cloneable {
 
     public BankRegistration getBankByIdNumber(long idNumber) {
         try {
-            return db.query(BankRegistration.class).whereEq(BankRegistration.N_ID_NUMBER, idNumber).selectUnique();
+            return db.auto(BankRegistration.class).whereEq(BankRegistration.N_ID_NUMBER, idNumber).selectUnique();
         } catch (RuntimeException ex) {
-            // TODO ResultNotUniqueException
             if (ex.getMessage() != null && ex.getMessage().startsWith("SQL Selection")) {
                 return null;
             } else {

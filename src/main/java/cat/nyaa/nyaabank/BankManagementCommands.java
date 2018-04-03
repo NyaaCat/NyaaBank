@@ -16,10 +16,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.librazy.nyaautils_lang_checker.LangKey;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -66,11 +63,11 @@ public class BankManagementCommands extends CommandReceiver {
             String playerName = args.next();
             List<BankRegistration> banks;
             if (playerName == null) {
-                banks = plugin.dbm.db.query(BankRegistration.class).select();
+                banks = plugin.dbm.db.auto(BankRegistration.class).select();
                 msg(sender, "command.bank_list.list_all");
             } else {
                 UUID id = plugin.getServer().getOfflinePlayer(playerName).getUniqueId();
-                banks = plugin.dbm.db.query(BankRegistration.class)
+                banks = plugin.dbm.db.auto(BankRegistration.class)
                         .whereEq(BankRegistration.N_OWNER_ID, id.toString())
                         .select();
                 msg(sender, "command.bank_list.list_player", playerName);
@@ -79,14 +76,14 @@ public class BankManagementCommands extends CommandReceiver {
                 msg(sender, "command.bank_list.list_empty");
                 return;
             }
-            banks.sort((a, b) -> a.ownerId.compareTo(b.ownerId));
+            banks.sort(Comparator.comparing(a -> a.ownerId));
             for (BankRegistration r : banks) {
                 OfflinePlayer p = plugin.getServer().getOfflinePlayer(r.ownerId);
                 msg(sender, "command.bank_list.list_item", r.idNumber, r.name, p.getName(), r.bankId.toString());
             }
         } else {   // players
             Player p = asPlayer(sender);
-            List<BankRegistration> banks = plugin.dbm.db.query(BankRegistration.class)
+            List<BankRegistration> banks = plugin.dbm.db.auto(BankRegistration.class)
                     .whereEq(BankRegistration.N_OWNER_ID, p.getUniqueId().toString())
                     .select();
 
@@ -96,7 +93,7 @@ public class BankManagementCommands extends CommandReceiver {
                 return;
             }
 
-            banks.sort((a, b) -> a.name.compareTo(b.name));
+            banks.sort(Comparator.comparing(a -> a.name));
             for (BankRegistration r : banks) {
                 msg(sender, "command.bank_list.list_item", r.idNumber, r.name, p.getName(), r.bankId.toString());
             }
@@ -154,7 +151,7 @@ public class BankManagementCommands extends CommandReceiver {
                     }
                 }
                 bank.savingInterestNext = newSaving;
-                plugin.dbm.db.query(BankRegistration.class)
+                plugin.dbm.db.auto(BankRegistration.class)
                         .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
                         .update(bank, BankRegistration.N_INTEREST_RATE_SAVING_NEXT);
                 break;
@@ -170,7 +167,7 @@ public class BankManagementCommands extends CommandReceiver {
                     }
                 }
                 bank.debitInterestNext = newLoan;
-                plugin.dbm.db.query(BankRegistration.class)
+                plugin.dbm.db.auto(BankRegistration.class)
                         .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
                         .update(bank, BankRegistration.N_INTEREST_RATE_DEBIT_NEXT);
                 break;
@@ -178,7 +175,7 @@ public class BankManagementCommands extends CommandReceiver {
             case "TYPE": {
                 InterestType newType = args.nextEnum(InterestType.class);
                 bank.interestTypeNext = newType;
-                plugin.dbm.db.query(BankRegistration.class)
+                plugin.dbm.db.auto(BankRegistration.class)
                         .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
                         .update(bank, BankRegistration.N_INTEREST_TYPE_NEXT);
                 break;
@@ -195,7 +192,7 @@ public class BankManagementCommands extends CommandReceiver {
 
         Map<UUID, BankAccount> accounts = new HashMap<>();
         Multimap<UUID, PartialRecord> partials = HashMultimap.create();
-        for (BankAccount a : plugin.dbm.db.query(BankAccount.class)
+        for (BankAccount a : plugin.dbm.db.auto(BankAccount.class)
                 .whereEq(BankAccount.N_BANK_ID, bank.getBankId()).select()) {
             if (accounts.containsKey(a.playerId)) {
                 plugin.getLogger().severe(String.format("Multiple accounts bank-id=%s, player-id=%s",
@@ -203,7 +200,7 @@ public class BankManagementCommands extends CommandReceiver {
             }
             accounts.put(a.playerId, a);
         }
-        for (PartialRecord p : plugin.dbm.db.query(PartialRecord.class)
+        for (PartialRecord p : plugin.dbm.db.auto(PartialRecord.class)
                 .whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).select()) {
             partials.put(p.playerId, p);
         }
