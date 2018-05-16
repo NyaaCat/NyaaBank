@@ -1,13 +1,11 @@
 package cat.nyaa.nyaabank.database.tables;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
 @Table(name = "bank_accounts")
+@Access(AccessType.FIELD)
 public class BankAccount {
     // Data column names
     public static final String N_ACCOUNT_ID = "account_id";
@@ -30,7 +28,7 @@ public class BankAccount {
     @Column(name = N_LOAN_INTEREST)
     public Double loan_interest;
 
-
+    @Access(AccessType.PROPERTY)
     @Column(name = N_ACCOUNT_ID)
     @Id
     public String getAccountId() {
@@ -41,6 +39,7 @@ public class BankAccount {
         this.accountId = UUID.fromString(accountId);
     }
 
+    @Access(AccessType.PROPERTY)
     @Column(name = N_BANK_ID)
     public String getBankId() {
         return bankId.toString();
@@ -50,6 +49,7 @@ public class BankAccount {
         this.bankId = UUID.fromString(bankId);
     }
 
+    @Access(AccessType.PROPERTY)
     @Column(name = N_PLAYER_ID)
     public String getPlayerId() {
         return playerId.toString();

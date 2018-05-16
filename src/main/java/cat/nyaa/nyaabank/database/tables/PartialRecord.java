@@ -2,15 +2,13 @@ package cat.nyaa.nyaabank.database.tables;
 
 import cat.nyaa.nyaabank.database.enums.TransactionType;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
 /* New deposit or loan */
 @Entity
+@Access(AccessType.PROPERTY)
 @Table(name = "partial_transactions")
 public class PartialRecord {
     // Data column names
@@ -25,6 +23,7 @@ public class PartialRecord {
     public UUID bankId;
     public UUID playerId;
     public Instant startDate; // Stored as Unix timestamp ms
+    @Access(AccessType.FIELD)
     @Column(name = N_CAPITAL)
     public Double capital;
     public TransactionType type; // deposit or loan

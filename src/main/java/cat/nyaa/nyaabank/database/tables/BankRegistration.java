@@ -3,16 +3,14 @@ package cat.nyaa.nyaabank.database.tables;
 import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.enums.InterestType;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
 /* Information about the bank */
 @Entity
 @Table(name = "bank_registration")
+@Access(AccessType.FIELD)
 public class BankRegistration {
     // Data column names
     public static final String N_ID_NUMBER = "id_number";
@@ -51,6 +49,7 @@ public class BankRegistration {
     public InterestType interestType;
     public InterestType interestTypeNext;
 
+    @Access(AccessType.PROPERTY)
     @Column(name = N_BANK_ID)
     @Id
     public String getBankId() {
@@ -61,6 +60,7 @@ public class BankRegistration {
         this.bankId = UUID.fromString(bankId);
     }
 
+    @Access(AccessType.PROPERTY)
     @Column(name = N_OWNER_ID)
     public String getOwnerId() {
         return ownerId.toString();
@@ -70,6 +70,7 @@ public class BankRegistration {
         this.ownerId = UUID.fromString(ownerId);
     }
 
+    @Access(AccessType.PROPERTY)
     @Column(name = N_ESTABLISH_DATE)
     public String getEstablishDate() {
         return establishDate.toString();
@@ -79,6 +80,7 @@ public class BankRegistration {
         this.establishDate = Instant.parse(establishDate);
     }
 
+    @Access(AccessType.PROPERTY)
     @Column(name = N_BANK_STATUS)
     public String getStatus() {
         return status.toString();
@@ -88,6 +90,7 @@ public class BankRegistration {
         this.status = BankStatus.valueOf(status);
     }
 
+    @Access(AccessType.PROPERTY)
     @Column(name = N_INTEREST_TYPE)
     public String getInterestType() {
         return interestType.toString();
@@ -97,6 +100,7 @@ public class BankRegistration {
         this.interestType = InterestType.valueOf(interestType);
     }
 
+    @Access(AccessType.PROPERTY)
     @Column(name = N_INTEREST_TYPE_NEXT)
     public String getInterestTypeNext() {
         return interestTypeNext.toString();

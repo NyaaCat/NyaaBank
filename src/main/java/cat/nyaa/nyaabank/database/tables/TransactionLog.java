@@ -26,7 +26,8 @@ public class TransactionLog {
     public static final String N_TRANSACTION_TYPE = "transaction_type";
 
     @Id
-    @Column(name = N_ID)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = N_ID, unique = true, nullable = false)
     public Long id;
 
     private Instant time;

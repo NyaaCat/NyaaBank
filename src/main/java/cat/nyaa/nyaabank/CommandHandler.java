@@ -19,6 +19,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static cat.nyaa.nyaabank.database.enums.TransactionType.REPAY;
 import static cat.nyaa.nyaabank.database.enums.TransactionType.WITHDRAW;
@@ -382,8 +383,8 @@ public class CommandHandler extends CommandReceiver {
 
     @SubCommand(value = "_benchmark", permission = "nb.debug") // for debug only
     public void checkPointDbBenchmark(CommandSender sender, Arguments args) { // WARN: will destroy database
-        final int NUM_BANK = 100;
-        final int NUM_ACCOUT = 500;
+        final int NUM_BANK = 10;
+        final int NUM_ACCOUT = 50;
         sender.sendMessage(String.format("#Bank: %d\n#Account per bank: %d", NUM_BANK, NUM_ACCOUT));
         sender.sendMessage("Inserting data ...");
         long startTime = System.currentTimeMillis();

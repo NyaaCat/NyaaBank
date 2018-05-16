@@ -4,14 +4,12 @@ import cat.nyaa.nyaabank.database.enums.TransactionType;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.UUID;
 
 /* Information about the signs in world map */
 @Entity
+@Access(AccessType.PROPERTY)
 @Table(name = "sign_registration")
 public class SignRegistration {
     // Data column names
@@ -29,8 +27,10 @@ public class SignRegistration {
     public UUID bankId;
     public TransactionType type; // DEPOSIT/WITHDRAW/LOAN/REPAY
     public Location location;
+    @Access(AccessType.FIELD)
     @Column(name = N_LOAN_AMOUNT)
     public Double loanAmount; // for LOAN sign only
+    @Access(AccessType.FIELD)
     @Column(name = N_COMMISSION_FEE)
     public Double commissionFee; // for WITHDRAW & REPAY only
 
