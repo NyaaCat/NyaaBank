@@ -25,7 +25,7 @@ repositories {
     }
     maven {
         name 'NyaaCore'
-        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCore/maven-repo-dev'
+        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCore/maven-repo'
     }
     maven {
         name 'sk89q'
