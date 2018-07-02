@@ -10,7 +10,9 @@ import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import cat.nyaa.nyaabank.signs.SignHelper;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
+import cat.nyaa.nyaacore.database.DatabaseUtils;
 import cat.nyaa.nyaacore.database.Query;
+import cat.nyaa.nyaacore.database.RelationalDB;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -19,7 +21,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 import static cat.nyaa.nyaabank.database.enums.TransactionType.REPAY;
 import static cat.nyaa.nyaabank.database.enums.TransactionType.WITHDRAW;
@@ -57,7 +58,7 @@ public class CommandHandler extends CommandReceiver {
 
             plugin.dbm.db.beginTransaction();
             List<BankRegistration> q = plugin.dbm.db.query(BankRegistration.class).select();
-            for (BankRegistration b : q) {
+            for (BankRegistration b: q) {
                 if (SignHelper.stringEqIgnoreColor(bankName, b.name, true)) {
                     msg(sender, "command.reg.name_duplicate");
                     return;
@@ -122,11 +123,11 @@ public class CommandHandler extends CommandReceiver {
 
         Map<UUID, Double> deposit = new HashMap<>();
         Map<UUID, Double> loan = new HashMap<>();
-        for (BankAccount b : accounts) {
+        for (BankAccount b: accounts) {
             deposit.put(b.bankId, deposit.getOrDefault(b.bankId, 0D) + b.deposit + b.deposit_interest);
             loan.put(b.bankId, loan.getOrDefault(b.bankId, 0D) + b.loan + b.loan_interest);
         }
-        for (PartialRecord p : partials) {
+        for (PartialRecord p: partials) {
             if (p.type == TransactionType.DEPOSIT) {
                 deposit.put(p.bankId, deposit.getOrDefault(p.bankId, 0D) + p.capital);
             } else if (p.type == TransactionType.LOAN) {
@@ -137,7 +138,7 @@ public class CommandHandler extends CommandReceiver {
         Set<UUID> bankIds = new HashSet<>();
         bankIds.addAll(deposit.keySet());
         bankIds.addAll(loan.keySet());
-        for (UUID bankId : bankIds) {
+        for (UUID bankId: bankIds) {
             BankRegistration bank = plugin.dbm.getUniqueBank(bankId.toString());
             msg(sender, "command.list_my.list_item", bank.name,
                     deposit.getOrDefault(bankId, 0D), loan.getOrDefault(bankId, 0D));
@@ -167,7 +168,7 @@ public class CommandHandler extends CommandReceiver {
                                                           .whereEq(BankAccount.N_PLAYER_ID, pid.toString()).select();
 
                 Map<UUID, BankRegistration> cachedBanks = new HashMap<>();
-                for (PartialRecord r : partials) {
+                for (PartialRecord r: partials) {
                     BankRegistration bank = cachedBanks.get(r.bankId);
                     if (bank == null) {
                         bank = plugin.dbm.getUniqueBank(r.getBankId());
@@ -188,7 +189,7 @@ public class CommandHandler extends CommandReceiver {
                                   .extra("bankrupt", "PLAYER").insert();
                     }
                 }
-                for (BankAccount r : accounts) {
+                for (BankAccount r: accounts) {
                     BankRegistration bank = cachedBanks.get(r.bankId);
                     if (bank == null) {
                         bank = plugin.dbm.getUniqueBank(r.getBankId());
@@ -233,7 +234,7 @@ public class CommandHandler extends CommandReceiver {
                                                             .whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).select();
                 List<BankAccount> accounts = plugin.dbm.db.query(BankAccount.class)
                                                           .whereEq(BankAccount.N_BANK_ID, bank.getBankId()).select();
-                for (PartialRecord r : partials) {
+                for (PartialRecord r: partials) {
                     if (r.type == TransactionType.LOAN) {
                         plugin.eco.depositPlayer(banker, r.capital);
                         plugin.eco.withdrawPlayer(plugin.getServer().getOfflinePlayer(r.playerId), r.capital);
@@ -248,7 +249,7 @@ public class CommandHandler extends CommandReceiver {
                                   .extra("bankrupt", "BANK").insert();
                     }
                 }
-                for (BankAccount r : accounts) {
+                for (BankAccount r: accounts) {
                     double netDeposit = r.deposit + r.deposit_interest - r.loan - r.loan_interest;
                     if (netDeposit < 0) { // player oew bank
                         plugin.eco.depositPlayer(banker, -netDeposit);
@@ -415,7 +416,7 @@ public class CommandHandler extends CommandReceiver {
         }
 
         Query<PartialRecord> q2 = plugin.dbm.db.query(PartialRecord.class);
-        for (BankRegistration b : banks) {
+        for (BankRegistration b: banks) {
             for (int i = 0; i < NUM_ACCOUT; i++) {
                 PartialRecord partial = new PartialRecord();
                 partial.transactionId = UUID.randomUUID();
@@ -447,5 +448,24 @@ public class CommandHandler extends CommandReceiver {
         plugin.dbm.db.query(PartialRecord.class).delete();
         plugin.dbm.db.query(BankAccount.class).delete();
         plugin.dbm.db.commitTransaction();
+    }
+
+    @SubCommand(value = "dump", permission = "nb.admin")
+    public void databaseDump(CommandSender sender, Arguments args) {
+        String to = args.next();
+        RelationalDB toDB = DatabaseUtils.get(to).connect();
+        RelationalDB fromDB = plugin.dbm.db;
+        DatabaseUtils.dumpDatabaseAsync(plugin, fromDB, toDB, (cls, r) -> {
+            if (cls != null) {
+                msg(sender, "internal.info.dump.ing", cls.getName(), to, r);
+            } else {
+                fromDB.close();
+                if (r == 0) {
+                    msg(sender, "internal.info.dump.finished", to);
+                } else {
+                    msg(sender, "internal.error.command_exception");
+                }
+            }
+        });
     }
 }

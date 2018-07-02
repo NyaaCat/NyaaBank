@@ -33,27 +33,28 @@ public class CycleManager {
 
         @Override
         public void run() {
+
+            long len = plugin.cfg.interestCycle;
+            long offset = plugin.cfg.interestCycleOffset;
+            long now = System.currentTimeMillis() - offset;
+
+            long idxB = Math.floorDiv(now, len);
+
+            // schedule next timer
+            long idxC = idxB + 1;
+            long nextCheckpoint = idxC * len + offset + 1;
+            long delay = nextCheckpoint - now;
+            new CheckPointTask(delay);
+
+            // update db
+            updateDatabaseInterests(idxB * len + offset, len);
+
+            // update lastCheckPoint
+            plugin.cfg.lastCheckPoint = idxB * len + offset + 1;
+            plugin.cfg.save();
+
             try {
-
                 plugin.dbm.db.beginTransaction();
-                long len = plugin.cfg.interestCycle;
-                long offset = plugin.cfg.interestCycleOffset;
-                long now = System.currentTimeMillis() - offset;
-
-                // update db
-                long idxB = Math.floorDiv(now, len);
-                updateDatabaseInterests(idxB * len + offset, len);
-
-                // update lastCheckPoint
-                plugin.cfg.lastCheckPoint = idxB * len + offset + 1;
-                plugin.cfg.save();
-
-                // schedule next timer
-                long idxC = idxB + 1;
-                long nextCheckpoint = idxC * len + offset + 1;
-                long delay = nextCheckpoint - now;
-                new CheckPointTask(delay);
-
                 SignHelper.batchUpdateSign(plugin, plugin.dbm.db.query(SignRegistration.class).select());
                 plugin.dbm.db.commitTransaction();
             } catch (Exception e) {
@@ -126,17 +127,17 @@ public class CycleManager {
 
             Map<UUID, Map<UUID, BankAccount>> accountMap = new HashMap<>(); // Map<bankId, Map<playerId, Account>>
             Map<UUID, BankRegistration> bankMap = new HashMap<>(); // Map<bankId, BankReg>
-            for (BankAccount a : plugin.dbm.db.query(BankAccount.class).select()) {
+            for (BankAccount a: plugin.dbm.db.query(BankAccount.class).select()) {
                 if (!accountMap.containsKey(a.bankId)) accountMap.put(a.bankId, new HashMap<>());
                 accountMap.get(a.bankId).put(a.playerId, a);
             }
-            for (BankRegistration r : plugin.dbm.db.query(BankRegistration.class).select()) {
+            for (BankRegistration r: plugin.dbm.db.query(BankRegistration.class).select()) {
                 bankMap.put(r.bankId, r);
             }
             // compute BankAccounts
-            for (UUID bankId : accountMap.keySet()) {
+            for (UUID bankId: accountMap.keySet()) {
                 if (bankMap.get(bankId).status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
-                for (UUID playerId : accountMap.get(bankId).keySet()) {
+                for (UUID playerId: accountMap.get(bankId).keySet()) {
                     BankAccount account = accountMap.get(bankId).get(playerId);
                     BankRegistration bank = bankMap.get(bankId);
                     OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
@@ -186,7 +187,7 @@ public class CycleManager {
             }
 
             // compute Partial Records
-            for (PartialRecord partial : plugin.dbm.db.query(PartialRecord.class).select()) {
+            for (PartialRecord partial: plugin.dbm.db.query(PartialRecord.class).select()) {
                 BankRegistration bank = bankMap.get(partial.bankId);
                 if (bank.status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
                 OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
@@ -273,7 +274,7 @@ public class CycleManager {
             }
 
             // update interest := interestNext
-            for (BankRegistration bank : bankMap.values()) {
+            for (BankRegistration bank: bankMap.values()) {
                 if (bank.status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
                 bank.debitInterest = bank.debitInterestNext;
                 bank.savingInterest = bank.savingInterestNext;
@@ -282,12 +283,12 @@ public class CycleManager {
 
             // write to database
             Query<BankRegistration> query1 = plugin.dbm.db.query(BankRegistration.class);
-            for (BankRegistration bank : bankMap.values()) {
+            for (BankRegistration bank: bankMap.values()) {
                 query1.reset().whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank);
             }
             Query<BankAccount> query2 = plugin.dbm.db.query(BankAccount.class);
-            for (Map<UUID, BankAccount> m : accountMap.values()) {
-                for (BankAccount account : m.values()) {
+            for (Map<UUID, BankAccount> m: accountMap.values()) {
+                for (BankAccount account: m.values()) {
                     query2.reset().whereEq(BankAccount.N_ACCOUNT_ID, account.getAccountId()).update(account);
                 }
             }
