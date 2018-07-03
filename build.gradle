@@ -5,6 +5,10 @@ plugins {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
 repositories {
     jcenter()
     maven {
@@ -34,11 +38,8 @@ repositories {
 }
 
 dependencies {
-    compile 'org.spigotmc:spigot-api:1.12.1-R0.1-SNAPSHOT'
     compile 'net.milkbowl.vault:VaultAPI:1.6'
-    compile('cat.nyaa:nyaacore:4.1-SNAPSHOT') {
-        transitive = false
-    }
+    compile 'cat.nyaa:nyaacore:5.0-SNAPSHOT'
     compile 'org.librazy:NyaaUtilsLangChecker:1.0-SNAPSHOT'
 }
 

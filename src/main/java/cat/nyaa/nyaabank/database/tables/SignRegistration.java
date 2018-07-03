@@ -1,17 +1,16 @@
 package cat.nyaa.nyaabank.database.tables;
 
 import cat.nyaa.nyaabank.database.enums.TransactionType;
-import cat.nyaa.nyaacore.database.DataColumn;
-import cat.nyaa.nyaacore.database.DataTable;
-import cat.nyaa.nyaacore.database.PrimaryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import sun.util.resources.cldr.yav.LocaleNames_yav;
 
+import javax.persistence.*;
 import java.util.UUID;
 
 /* Information about the signs in world map */
-@DataTable("sign_registration")
+@Entity
+@Access(AccessType.PROPERTY)
+@Table(name = "sign_registration")
 public class SignRegistration {
     // Data column names
     public static final String N_LOAN_AMOUNT = "loan_amount";
@@ -28,13 +27,15 @@ public class SignRegistration {
     public UUID bankId;
     public TransactionType type; // DEPOSIT/WITHDRAW/LOAN/REPAY
     public Location location;
-    @DataColumn(N_LOAN_AMOUNT)
+    @Access(AccessType.FIELD)
+    @Column(name = N_LOAN_AMOUNT)
     public Double loanAmount; // for LOAN sign only
-    @DataColumn(N_COMMISSION_FEE)
+    @Access(AccessType.FIELD)
+    @Column(name = N_COMMISSION_FEE)
     public Double commissionFee; // for WITHDRAW & REPAY only
 
-    @PrimaryKey
-    @DataColumn(N_SIGN_ID)
+    @Id
+    @Column(name = N_SIGN_ID)
     public String getSignId() {
         return signId.toString();
     }
@@ -43,7 +44,7 @@ public class SignRegistration {
         this.signId = UUID.fromString(signId);
     }
 
-    @DataColumn(N_BANK_ID)
+    @Column(name = N_BANK_ID)
     public String getBankId() {
         return bankId.toString();
     }
@@ -52,7 +53,7 @@ public class SignRegistration {
         this.bankId = UUID.fromString(bankId);
     }
 
-    @DataColumn(N_SIGN_TYPE)
+    @Column(name = N_SIGN_TYPE)
     public String getType() {
         return type.toString();
     }
@@ -61,7 +62,7 @@ public class SignRegistration {
         this.type = TransactionType.valueOf(type);
     }
 
-    @DataColumn(N_LOCATION_WORLD_NAME)
+    @Column(name = N_LOCATION_WORLD_NAME)
     public String getWorldName() {
         return location.getWorld().getName();
     }
@@ -74,9 +75,9 @@ public class SignRegistration {
         }
     }
 
-    @DataColumn(N_LOCATION_X)
+    @Column(name = N_LOCATION_X)
     public Long getCoordinateX() {
-        return (long)location.getBlockX();
+        return (long) location.getBlockX();
     }
 
     public void setCoordinateX(Long x) {
@@ -87,9 +88,9 @@ public class SignRegistration {
         }
     }
 
-    @DataColumn(N_LOCATION_Y)
+    @Column(name = N_LOCATION_Y)
     public Long getCoordinateY() {
-        return (long)location.getBlockY();
+        return (long) location.getBlockY();
     }
 
     public void setCoordinateY(Long y) {
@@ -100,9 +101,9 @@ public class SignRegistration {
         }
     }
 
-    @DataColumn(N_LOCATION_Z)
+    @Column(name = N_LOCATION_Z)
     public Long getCoordinateZ() {
-        return (long)location.getBlockZ();
+        return (long) location.getBlockZ();
     }
 
     public void setCoordinateZ(Long z) {
