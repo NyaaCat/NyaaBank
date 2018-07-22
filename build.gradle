@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 sourceCompatibility = 1.8
@@ -39,8 +39,9 @@ repositories {
 
 dependencies {
     compile 'net.milkbowl.vault:VaultAPI:1.6'
-    compile 'cat.nyaa:nyaacore:5.0-SNAPSHOT'
-    compile 'org.librazy:NyaaUtilsLangChecker:1.0-SNAPSHOT'
+    api 'org.spigotmc:spigot-api:1.13-R0.1-SNAPSHOT'
+    api 'cat.nyaa:nyaacore:6.0-SNAPSHOT'
+    compileOnly 'org.librazy:NyaaUtilsLangChecker:1.0-SNAPSHOT'
 }
 
 String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")

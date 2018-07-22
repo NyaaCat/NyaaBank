@@ -6,6 +6,7 @@ depend: [Vault, NyaaUtils]
 softdepend: []
 authors: [RecursiveG]
 website: "https://github.com/NyaaCat/NyaaBank"
+api-version: 1.13
 
 commands:
   nyaabank:
