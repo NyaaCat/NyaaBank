@@ -7,7 +7,7 @@ import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
 import cat.nyaa.nyaabank.database.tables.TransactionLog;
 import cat.nyaa.nyaacore.database.DatabaseUtils;
-import cat.nyaa.nyaacore.database.RelationalDB;
+import cat.nyaa.nyaacore.database.relational.RelationalDB;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,9 +17,8 @@ public class DatabaseManager implements Cloneable {
     public final RelationalDB db;
 
     public DatabaseManager(NyaaBank plugin) {
-        db = DatabaseUtils.get();
+        db = DatabaseUtils.get(RelationalDB.class);
         this.plugin = plugin;
-        db.connect();
     }
 
     /**
@@ -31,10 +30,10 @@ public class DatabaseManager implements Cloneable {
      */
     public BankRegistration getUniqueBank(String partialUUID) {
         if (partialUUID == null || "".equals(partialUUID)) return null;
-        List<BankRegistration> r = db.auto(BankRegistration.class)
+        List<BankRegistration> r = db.query(BankRegistration.class)
                                      .where(BankRegistration.N_BANK_ID, " LIKE ", "%" + partialUUID + "%")
                                      .select();
-        if (r.size() > 1 || r.size() <= 0) return null;
+        if (r.isEmpty() || r.size() > 1) return null;
         return r.get(0);
     }
 
@@ -44,11 +43,11 @@ public class DatabaseManager implements Cloneable {
      */
     public BankAccount getAccount(UUID bankId, UUID playerId) {
         BankAccount account = null;
-        List<BankAccount> l = db.auto(BankAccount.class)
+        List<BankAccount> l = db.query(BankAccount.class)
                                 .whereEq(BankAccount.N_BANK_ID, bankId.toString())
                                 .whereEq(BankAccount.N_PLAYER_ID, playerId.toString())
                                 .select();
-        if (l.size() > 0) {
+        if (!l.isEmpty()) {
             if (l.size() > 1) {
                 plugin.getLogger().severe("Duplicated account: bankid:" +
                                                   bankId.toString() + " playerid:" + playerId.toString());
@@ -59,7 +58,7 @@ public class DatabaseManager implements Cloneable {
     }
 
     public List<PartialRecord> getPartialRecords(UUID bankId, UUID playerId, TransactionType type) {
-        return db.auto(PartialRecord.class)
+        return db.query(PartialRecord.class)
                  .whereEq(PartialRecord.N_BANK_ID, bankId.toString())
                  .whereEq(PartialRecord.N_PLAYER_ID, playerId.toString())
                  .whereEq(PartialRecord.N_TRANSACTION_TYPE, type.name())
@@ -109,7 +108,7 @@ public class DatabaseManager implements Cloneable {
      */
     public long getNextIdNumber() {
         long id = 1;
-        for (BankRegistration b : db.auto(BankRegistration.class).select()) {
+        for (BankRegistration b : db.query(BankRegistration.class).select()) {
             if (b.idNumber >= id) id = b.idNumber + 1;
         }
         return id;
@@ -117,7 +116,7 @@ public class DatabaseManager implements Cloneable {
 
     public BankRegistration getBankByIdNumber(long idNumber) {
         try {
-            return db.auto(BankRegistration.class).whereEq(BankRegistration.N_ID_NUMBER, idNumber).selectUnique();
+            return db.query(BankRegistration.class).whereEq(BankRegistration.N_ID_NUMBER, idNumber).selectUnique();
         } catch (RuntimeException ex) {
             if (ex.getMessage() != null && ex.getMessage().startsWith("SQL Selection")) {
                 return null;

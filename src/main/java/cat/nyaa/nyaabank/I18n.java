@@ -1,6 +1,6 @@
 package cat.nyaa.nyaabank;
 
-import org.librazy.nyaautils_lang_checker.LangKey;
+import org.librazy.nclangchecker.LangKey;
 import cat.nyaa.nyaacore.LanguageRepository;
 import org.bukkit.plugin.java.JavaPlugin;
 

@@ -11,8 +11,8 @@ import cat.nyaa.nyaabank.signs.SignHelper;
 import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
 import cat.nyaa.nyaacore.database.DatabaseUtils;
-import cat.nyaa.nyaacore.database.Query;
-import cat.nyaa.nyaacore.database.RelationalDB;
+import cat.nyaa.nyaacore.database.relational.RelationalDB;
+import cat.nyaa.nyaacore.database.relational.Query;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -54,9 +54,7 @@ public class CommandHandler extends CommandReceiver {
             throw new BadCommandException("manual.reg.usage");
         }
         bankName = ChatColor.translateAlternateColorCodes('&', bankName);
-        try {
-
-            plugin.dbm.db.beginTransaction();
+        try (Query<BankRegistration> query = plugin.dbm.db.queryTransactional(BankRegistration.class)){
             List<BankRegistration> q = plugin.dbm.db.query(BankRegistration.class).select();
             for (BankRegistration b: q) {
                 if (SignHelper.stringEqIgnoreColor(bankName, b.name, true)) {
@@ -89,11 +87,10 @@ public class CommandHandler extends CommandReceiver {
             reg.savingInterestNext = savingInter;
             reg.debitInterest = debitInter;
             reg.debitInterestNext = debitInter;
-            plugin.dbm.db.query(BankRegistration.class).insert(reg);
-            plugin.dbm.db.commitTransaction();
+            query.insert(reg);
+            query.commit();
             msg(sender, "command.reg.established", reg.idNumber, reg.name, reg.bankId.toString());
         } catch (Exception e) {
-            plugin.dbm.db.rollbackTransaction();
             throw e;
         }
     }
@@ -101,7 +98,7 @@ public class CommandHandler extends CommandReceiver {
     @SubCommand(value = "top", permission = "nb.top")
     public void topBanks(CommandSender sender, Arguments args) {
         // TODO use actual capital instead of registered_capital
-        List<BankRegistration> l = plugin.dbm.db.auto(BankRegistration.class).select();
+        List<BankRegistration> l = plugin.dbm.db.query(BankRegistration.class).select();
         l.sort((a, b) -> a.registered_capital.compareTo(b.registered_capital));
         for (int i = l.size(); i >= 1; i--) {
             BankRegistration b = l.get(i - 1);
@@ -116,9 +113,9 @@ public class CommandHandler extends CommandReceiver {
             pid = plugin.getServer().getOfflinePlayer(args.next()).getUniqueId();
         }
         if (pid == null) pid = asPlayer(sender).getUniqueId();
-        List<BankAccount> accounts = plugin.dbm.db.auto(BankAccount.class)
+        List<BankAccount> accounts = plugin.dbm.db.query(BankAccount.class)
                                                   .whereEq(BankAccount.N_PLAYER_ID, pid.toString()).select();
-        List<PartialRecord> partials = plugin.dbm.db.auto(PartialRecord.class)
+        List<PartialRecord> partials = plugin.dbm.db.query(PartialRecord.class)
                                                     .whereEq(PartialRecord.N_PLAYER_ID, pid.toString()).select();
 
         Map<UUID, Double> deposit = new HashMap<>();
@@ -448,24 +445,5 @@ public class CommandHandler extends CommandReceiver {
         plugin.dbm.db.query(PartialRecord.class).delete();
         plugin.dbm.db.query(BankAccount.class).delete();
         plugin.dbm.db.commitTransaction();
-    }
-
-    @SubCommand(value = "dump", permission = "nb.admin")
-    public void databaseDump(CommandSender sender, Arguments args) {
-        String to = args.next();
-        RelationalDB toDB = DatabaseUtils.get(to).connect();
-        RelationalDB fromDB = plugin.dbm.db;
-        DatabaseUtils.dumpDatabaseAsync(plugin, fromDB, toDB, (cls, r) -> {
-            if (cls != null) {
-                msg(sender, "internal.info.dump.ing", cls.getName(), to, r);
-            } else {
-                fromDB.close();
-                if (r == 0) {
-                    msg(sender, "internal.info.dump.finished", to);
-                } else {
-                    msg(sender, "internal.error.command_exception");
-                }
-            }
-        });
     }
 }

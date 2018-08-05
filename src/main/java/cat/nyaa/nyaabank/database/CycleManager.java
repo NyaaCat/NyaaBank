@@ -7,7 +7,7 @@ import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
 import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import cat.nyaa.nyaabank.signs.SignHelper;
-import cat.nyaa.nyaacore.database.Query;
+import cat.nyaa.nyaacore.database.relational.Query;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -54,11 +54,8 @@ public class CycleManager {
             plugin.cfg.save();
 
             try {
-                plugin.dbm.db.beginTransaction();
                 SignHelper.batchUpdateSign(plugin, plugin.dbm.db.query(SignRegistration.class).select());
-                plugin.dbm.db.commitTransaction();
             } catch (Exception e) {
-                plugin.dbm.db.rollbackTransaction();
                 throw e;
             }
             // TODO we may not need to update all signs

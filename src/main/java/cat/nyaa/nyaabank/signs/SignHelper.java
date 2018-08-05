@@ -46,7 +46,7 @@ public final class SignHelper {
      * if no sign registered, return null
      */
     public static SignRegistration getSign(NyaaBank plugin, Location location) {
-        List<SignRegistration> l = plugin.dbm.db.auto(SignRegistration.class)
+        List<SignRegistration> l = plugin.dbm.db.query(SignRegistration.class)
                 .whereEq(SignRegistration.N_LOCATION_WORLD_NAME, location.getWorld().getName())
                 .whereEq(SignRegistration.N_LOCATION_X, location.getBlockX())
                 .whereEq(SignRegistration.N_LOCATION_Y, location.getBlockY())
@@ -170,7 +170,7 @@ public final class SignHelper {
                 try {
                     updateSignBlock(plugin, sr.location, sr);
                 } catch (IllegalArgumentException ex) { // remove invalid sign registrations
-                    plugin.dbm.db.auto(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).delete();
+                    plugin.dbm.db.query(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).delete();
                     ex.printStackTrace();
                 }
                 idx++;
@@ -186,7 +186,7 @@ public final class SignHelper {
      * Update all signs of the given bank
      */
     public static void batchUpdateSign(NyaaBank plugin, BankRegistration bank) {
-        batchUpdateSign(plugin, plugin.dbm.db.auto(SignRegistration.class)
+        batchUpdateSign(plugin, plugin.dbm.db.query(SignRegistration.class)
                 .whereEq(SignRegistration.N_BANK_ID, bank.getBankId()).select());
     }
 }

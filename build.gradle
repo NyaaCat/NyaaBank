@@ -40,8 +40,8 @@ repositories {
 dependencies {
     compile 'net.milkbowl.vault:VaultAPI:1.6'
     api 'org.spigotmc:spigot-api:1.13-R0.1-SNAPSHOT'
-    api 'cat.nyaa:nyaacore:6.0-SNAPSHOT'
-    compileOnly 'org.librazy:NyaaUtilsLangChecker:1.0-SNAPSHOT'
+    api 'cat.nyaa:nyaacore:6.1-SNAPSHOT'
+    compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
 }
 
 String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")

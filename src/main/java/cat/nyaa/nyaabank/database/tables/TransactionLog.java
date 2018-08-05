@@ -175,6 +175,6 @@ public class TransactionLog {
             }
         }
         extra = "{" + extra + "}";
-        dbm.db.auto(TransactionLog.class).insert(this);
+        dbm.db.query(TransactionLog.class).insert(this);
     }
 }

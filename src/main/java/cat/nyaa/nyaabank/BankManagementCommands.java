@@ -14,7 +14,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.librazy.nyaautils_lang_checker.LangKey;
+import org.librazy.nclangchecker.LangKey;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -63,11 +63,11 @@ public class BankManagementCommands extends CommandReceiver {
             String playerName = args.next();
             List<BankRegistration> banks;
             if (playerName == null) {
-                banks = plugin.dbm.db.auto(BankRegistration.class).select();
+                banks = plugin.dbm.db.query(BankRegistration.class).select();
                 msg(sender, "command.bank_list.list_all");
             } else {
                 UUID id = plugin.getServer().getOfflinePlayer(playerName).getUniqueId();
-                banks = plugin.dbm.db.auto(BankRegistration.class)
+                banks = plugin.dbm.db.query(BankRegistration.class)
                         .whereEq(BankRegistration.N_OWNER_ID, id.toString())
                         .select();
                 msg(sender, "command.bank_list.list_player", playerName);
@@ -83,7 +83,7 @@ public class BankManagementCommands extends CommandReceiver {
             }
         } else {   // players
             Player p = asPlayer(sender);
-            List<BankRegistration> banks = plugin.dbm.db.auto(BankRegistration.class)
+            List<BankRegistration> banks = plugin.dbm.db.query(BankRegistration.class)
                     .whereEq(BankRegistration.N_OWNER_ID, p.getUniqueId().toString())
                     .select();
 
@@ -151,7 +151,7 @@ public class BankManagementCommands extends CommandReceiver {
                     }
                 }
                 bank.savingInterestNext = newSaving;
-                plugin.dbm.db.auto(BankRegistration.class)
+                plugin.dbm.db.query(BankRegistration.class)
                         .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
                         .update(bank, BankRegistration.N_INTEREST_RATE_SAVING_NEXT);
                 break;
@@ -167,7 +167,7 @@ public class BankManagementCommands extends CommandReceiver {
                     }
                 }
                 bank.debitInterestNext = newLoan;
-                plugin.dbm.db.auto(BankRegistration.class)
+                plugin.dbm.db.query(BankRegistration.class)
                         .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
                         .update(bank, BankRegistration.N_INTEREST_RATE_DEBIT_NEXT);
                 break;
@@ -175,7 +175,7 @@ public class BankManagementCommands extends CommandReceiver {
             case "TYPE": {
                 InterestType newType = args.nextEnum(InterestType.class);
                 bank.interestTypeNext = newType;
-                plugin.dbm.db.auto(BankRegistration.class)
+                plugin.dbm.db.query(BankRegistration.class)
                         .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
                         .update(bank, BankRegistration.N_INTEREST_TYPE_NEXT);
                 break;
@@ -192,7 +192,7 @@ public class BankManagementCommands extends CommandReceiver {
 
         Map<UUID, BankAccount> accounts = new HashMap<>();
         Multimap<UUID, PartialRecord> partials = HashMultimap.create();
-        for (BankAccount a : plugin.dbm.db.auto(BankAccount.class)
+        for (BankAccount a : plugin.dbm.db.query(BankAccount.class)
                 .whereEq(BankAccount.N_BANK_ID, bank.getBankId()).select()) {
             if (accounts.containsKey(a.playerId)) {
                 plugin.getLogger().severe(String.format("Multiple accounts bank-id=%s, player-id=%s",
@@ -200,7 +200,7 @@ public class BankManagementCommands extends CommandReceiver {
             }
             accounts.put(a.playerId, a);
         }
-        for (PartialRecord p : plugin.dbm.db.auto(PartialRecord.class)
+        for (PartialRecord p : plugin.dbm.db.query(PartialRecord.class)
                 .whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).select()) {
             partials.put(p.playerId, p);
         }
