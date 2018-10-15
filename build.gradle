@@ -24,23 +24,19 @@ repositories {
         url 'http://nexus.hc.to/content/repositories/pub_releases'
     }
     maven {
-        name 'NyaaCore'
-        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCore/maven-repo'
+        name 'NyaaCentral'
+        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'
     }
     maven {
         name 'sk89q'
         url 'http://maven.sk89q.com/artifactory/repo/'
     }
-    maven {
-        name 'nu-langchecker'
-        url 'https://raw.githubusercontent.com/Librazy/NyaaUtilsLangChecker/maven-repo'
-    }
 }
 
 dependencies {
     compile 'net.milkbowl.vault:VaultAPI:1.6'
-    api 'org.spigotmc:spigot-api:1.13-R0.1-SNAPSHOT'
-    api 'cat.nyaa:nyaacore:6.1-SNAPSHOT'
+    api 'org.spigotmc:spigot-api:1.13.1-R0.1-SNAPSHOT'
+    api 'cat.nyaa:nyaacore:6.2-SNAPSHOT'
     compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
 }
 
