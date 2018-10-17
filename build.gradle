@@ -34,7 +34,9 @@ repositories {
 }
 
 dependencies {
-    compile 'net.milkbowl.vault:VaultAPI:1.6'
+    compile ('net.milkbowl.vault:VaultAPI:1.7') {
+        transitive = false
+    }
     api 'org.spigotmc:spigot-api:1.13.1-R0.1-SNAPSHOT'
     api 'cat.nyaa:nyaacore:6.2-SNAPSHOT'
     compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
@@ -43,7 +45,7 @@ dependencies {
 String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")
 
 compileJava {
-    options.compilerArgs += ["-Xplugin:NyaaUtilsLangAnnotationProcessor"]
+    options.compilerArgs += ["-Xplugin:NyaaUtilsLangAnnotationProcessor", "-Xlint:deprecation"]
     if (nyaaCoreLangDir != null) {
         options.compilerArgs += ["-ALANG_DIR_ADDITIONAL_PATH=" + nyaaCoreLangDir]
     }
