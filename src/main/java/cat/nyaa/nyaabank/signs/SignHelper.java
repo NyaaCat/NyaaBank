@@ -9,6 +9,7 @@ import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -56,14 +57,18 @@ public final class SignHelper {
         return l.get(0);
     }
 
+    public static boolean isSignBlock(Block b) {
+        if (b == null) return false;
+        return b.getType().name().endsWith("_SIGN");
+    }
+
     /**
      * update the sign according to the sign registeration
      * IllegalArgumentException thrown if not valid sign block.
      */
     public static void updateSignBlock(NyaaBank plugin, Location signLocation, SignRegistration signReg) {
         if (signLocation == null || signLocation.getWorld() == null || signLocation.getBlock() == null ||
-                !(signLocation.getBlock().getType() == Material.WALL_SIGN ||
-                signLocation.getBlock().getType() == Material.SIGN)) {
+                !isSignBlock(signLocation.getBlock())) {
             throw new IllegalArgumentException("Not a valid sign block");
         }
         BankRegistration bank = plugin.dbm.getUniqueBank(signReg.getBankId());

@@ -1,52 +1,91 @@
-plugins {
-    id 'java-library'
-}
+apply plugin: "java-library"
+apply plugin: "maven-publish"
 
+ext.majorVersion = 6
+ext.minorVersion = 4
+ext.minecraftVersion = "1.14.1"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}
+// Suppiled by Jenkins
+ext.buildNumber = System.env.BUILD_NUMBER == null ? "x"                : "$System.env.BUILD_NUMBER"
+ext.mavenDirectory = System.env.MAVEN_DIR == null ? "$projectDir/repo" : "$System.env.MAVEN_DIR"
+
+// Version used for distribution. Different from maven repo
+group = "cat.nyaa"
+archivesBaseName = "NyaaBank-mc$minecraftVersion"
+version = "$majorVersion.$minorVersion.$buildNumber"
 
 repositories {
     jcenter()
-    maven {
-        name 'Spigot'
-        url 'https://hub.spigotmc.org/nexus/content/groups/public/'
-    }
-    maven {
-        name 'Sonatype'
-        url 'https://oss.sonatype.org/content/groups/public'
-    }
-    maven {
-        name 'vault-repo'
-        url 'http://nexus.hc.to/content/repositories/pub_releases'
-    }
-    maven {
-        name 'NyaaCentral'
-        url 'https://raw.githubusercontent.com/NyaaCat/NyaaCentral/maven-repo'
-    }
-    maven {
-        name 'sk89q'
-        url 'http://maven.sk89q.com/artifactory/repo/'
-    }
+    maven { name 'Spigot';      url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+    maven { name 'Sonatype';    url 'https://oss.sonatype.org/content/groups/public' }
+    maven { name 'sk89q';       url 'http://maven.sk89q.com/artifactory/repo/' }
+    maven { name 'vault-repo';  url 'http://nexus.hc.to/content/repositories/pub_releases' }
+    maven { name 'NyaaCat';     url 'https://ci.nyaacat.com/maven/' }
+    maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
 }
 
 dependencies {
-    compile ('net.milkbowl.vault:VaultAPI:1.7') {
-        transitive = false
+    // spigot
+    compileOnly "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
+
+    // other nyaa plugins
+    if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
+        compileOnly project(":NyaaCore")
+    } else {
+        compileOnly('cat.nyaa:nyaacore:6.4-SNAPSHOT') { transitive = false }
     }
-    api 'org.spigotmc:spigot-api:1.13.1-R0.1-SNAPSHOT'
-    api 'cat.nyaa:nyaacore:6.2-SNAPSHOT'
+
+    // 3rd party plugins
+    compileOnly ('net.milkbowl.vault:VaultAPI:1.7') { transitive = false }
+    compileOnly 'javax.persistence:javax.persistence-api:2.2' // NyaaCore shadows this
+
+    // annotation processor
     compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
+    annotationProcessor 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
+    annotationProcessor "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
 }
 
-String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")
+// TODO: langcheck temporarily disabled
+// String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")
+// compileJava {
+//     options.compilerArgs += ["-Xplugin:NyaaUtilsLangAnnotationProcessor", "-Xlint:deprecation"]
+//     if (nyaaCoreLangDir != null) {
+//         options.compilerArgs += ["-ALANG_DIR_ADDITIONAL_PATH=" + nyaaCoreLangDir]
+//     }
+// }
 
-compileJava {
-    options.compilerArgs += ["-Xplugin:NyaaUtilsLangAnnotationProcessor", "-Xlint:deprecation"]
-    if (nyaaCoreLangDir != null) {
-        options.compilerArgs += ["-ALANG_DIR_ADDITIONAL_PATH=" + nyaaCoreLangDir]
+
+
+// publications
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier = 'javadoc'
+}
+processResources { // modify version string
+    filesMatching("**/plugin.yml") {
+        expand 'version': project.version
+    }
+}
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact sourcesJar
+            // artifact javadocJar TODO: fix javadocs
+            groupId "cat.nyaa"
+            artifactId "nyaabank"
+            version "$majorVersion.$minorVersion-SNAPSHOT"
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "${mavenDirectory}"
+        }
     }
 }

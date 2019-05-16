@@ -55,8 +55,7 @@ public class SignListener implements Listener{
     public void onPlayerRightClickSign(PlayerInteractEvent ev) {
         if (!ev.hasBlock()) return;
         if (ev.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        Material blockType = ev.getClickedBlock().getType();
-        if (blockType != Material.SIGN && blockType != Material.WALL_SIGN) return;
+        if (!SignHelper.isSignBlock(ev.getClickedBlock())) return;
         Sign sign = (Sign) ev.getClickedBlock().getState();
         String magicLine = ChatColor.stripColor(sign.getLine(0));
         if (stringEqIgnoreColor(magicLine, plugin.cfg.signMagic, false) ||
@@ -217,8 +216,7 @@ public class SignListener implements Listener{
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerBreakSign(BlockBreakEvent ev) {
-        Material m = ev.getBlock().getType();
-        if (m != Material.SIGN && m != Material.WALL_SIGN) return;
+        if (!SignHelper.isSignBlock(ev.getBlock())) return;
         SignRegistration sr = SignHelper.getSign(plugin, ev.getBlock().getLocation());
         if (sr == null) return;
         if (!ev.getPlayer().hasPermission("nb.sign_break")) {
