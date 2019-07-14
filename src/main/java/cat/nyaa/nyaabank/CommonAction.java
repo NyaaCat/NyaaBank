@@ -7,7 +7,6 @@ import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
-import org.librazy.nclangchecker.LangKey;
 
 import java.time.Instant;
 import java.util.List;
@@ -20,7 +19,6 @@ public final class CommonAction {
         }
 
         @Override
-        @LangKey(skipCheck = true)
         public String getMessage() {
             return super.getMessage();
         }

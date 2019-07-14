@@ -3,17 +3,21 @@ apply plugin: "maven-publish"
 
 ext.majorVersion = 6
 ext.minorVersion = 4
-ext.minecraftVersion = "1.14.1"
+ext.minecraftVersion = "1.14.3"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+ext.pluginName = "NyaaBank"
+ext.pluginNameLower = pluginName.toLowerCase()
 
 // Suppiled by Jenkins
 ext.buildNumber = System.env.BUILD_NUMBER == null ? "x"                : "$System.env.BUILD_NUMBER"
 ext.mavenDirectory = System.env.MAVEN_DIR == null ? "$projectDir/repo" : "$System.env.MAVEN_DIR"
+ext.jdDirectory = System.env.JAVADOCS_DIR == null ? null               : "$System.env.JAVADOCS_DIR"
 
 // Version used for distribution. Different from maven repo
 group = "cat.nyaa"
-archivesBaseName = "NyaaBank-mc$minecraftVersion"
+archivesBaseName = "${pluginName}-mc$minecraftVersion"
 version = "$majorVersion.$minorVersion.$buildNumber"
 
 repositories {
@@ -40,32 +44,21 @@ dependencies {
     // 3rd party plugins
     compileOnly ('net.milkbowl.vault:VaultAPI:1.7') { transitive = false }
     compileOnly 'javax.persistence:javax.persistence-api:2.2' // NyaaCore shadows this
-
-    // annotation processor
-    compileOnly 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
-    annotationProcessor 'org.librazy:NyaaUtilsLangChecker:2.0-SNAPSHOT'
-    annotationProcessor "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
 }
-
-// TODO: langcheck temporarily disabled
-// String nyaaCoreLangDir = System.getenv("NYAACORE_LANG_DIR")
-// compileJava {
-//     options.compilerArgs += ["-Xplugin:NyaaUtilsLangAnnotationProcessor", "-Xlint:deprecation"]
-//     if (nyaaCoreLangDir != null) {
-//         options.compilerArgs += ["-ALANG_DIR_ADDITIONAL_PATH=" + nyaaCoreLangDir]
-//     }
-// }
-
-
 
 // publications
 task sourcesJar(type: Jar) {
-    from sourceSets.main.allJava
     archiveClassifier = 'sources'
+    from sourceSets.main.allJava
+}
+// write javadocs to an external folder which can be served via nginx
+if (ext.jdDirectory != null) {
+    javadoc.destinationDir = file("${jdDirectory}/${pluginNameLower}-${version}")
 }
 task javadocJar(type: Jar) {
-    from javadoc
+    dependsOn javadoc
     archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
 }
 processResources { // modify version string
     filesMatching("**/plugin.yml") {
@@ -75,17 +68,40 @@ processResources { // modify version string
 publishing {
     publications {
         mavenJava(MavenPublication) {
-            artifact sourcesJar
-            // artifact javadocJar TODO: fix javadocs
-            groupId "cat.nyaa"
-            artifactId "nyaabank"
-            version "$majorVersion.$minorVersion-SNAPSHOT"
             from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            
+            groupId "cat.nyaa"
+            artifactId pluginNameLower
+            version "$majorVersion.$minorVersion-SNAPSHOT"
         }
     }
     repositories {
         maven {
             url "${mavenDirectory}"
         }
+    }
+}
+
+// options for generating Javadoc
+javadoc {
+    (options as StandardJavadocDocletOptions).with {
+        links 'https://docs.oracle.com/javase/8/docs/api/'
+        links 'https://hub.spigotmc.org/javadocs/spigot/'
+        links 'https://google.github.io/guava/releases/21.0/api/docs/'
+        links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
+
+        locale 'en_US'
+        encoding 'UTF-8'
+        docEncoding 'UTF-8'
+        addBooleanOption('keywords', true)
+
+        if (JavaVersion.current() > JavaVersion.VERSION_1_9) {
+            options.addBooleanOption('html5', true)
+        }
+
+        windowTitle = "$pluginName Javadoc"
+        docTitle = "$pluginName (mc$minecraftVersion-${project.version})"
     }
 }

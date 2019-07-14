@@ -103,13 +103,13 @@ public class CycleManager {
     }
 
     /**
-     * Actually check & update the database.
+     * Actually check &nbsp; update the database.
      * Since the timer won't tick exactly precise, there might be several seconds error.
      * Thus designatedTimestamp is used and the function acts like it's been called
      * exactly at that time.
      * <p>
-     * It compute the interest for deposit & loan in BankAccounts
-     * It compute the interest for deposit & loan in PartialRecord
+     * It compute the interest for deposit &nbsp; loan in BankAccounts
+     * It compute the interest for deposit &nbsp; loan in PartialRecord
      * It updates interest := interestNext
      * It won't change the lastCheckPoint in config file.
      *
