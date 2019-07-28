@@ -7,8 +7,8 @@ import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.SignRegistration;
+import cat.nyaa.nyaacore.orm.WhereClause;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -21,12 +21,13 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import static cat.nyaa.nyaabank.signs.SignHelper.*;
+import static cat.nyaa.nyaabank.signs.SignHelper.stringEqIgnoreColor;
 
-public class SignListener implements Listener{
+public class SignListener implements Listener {
     public final static String SIGN_MAGIC_FALLBACK = "[BANK]";
     private final ChatInputCallbacks callbacks;
     private final NyaaBank plugin;
+
     public SignListener(NyaaBank plugin) {
         this.plugin = plugin;
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
@@ -51,6 +52,7 @@ public class SignListener implements Listener{
                     .capital(amount).insert();
         } // do nothing if zero commission
     }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerRightClickSign(PlayerInteractEvent ev) {
         if (!ev.hasBlock()) return;
@@ -92,7 +94,8 @@ public class SignListener implements Listener{
                                 @Override
                                 public void onDoubleInput(Player p, double input, boolean isAll) {
                                     try {
-                                        if (isAll) throw new CommonAction.TransactionException("user.sign.invalid_number");
+                                        if (isAll)
+                                            throw new CommonAction.TransactionException("user.sign.invalid_number");
                                         CommonAction.deposit(plugin, p, bank, input);
                                         p.sendMessage(I18n.format("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
@@ -133,7 +136,8 @@ public class SignListener implements Listener{
                                 @Override
                                 public void onDoubleInput(Player p, double input, boolean isAll) {
                                     try {
-                                        if (!isAll) throw new CommonAction.TransactionException("user.sign.loan_cancelled");
+                                        if (!isAll)
+                                            throw new CommonAction.TransactionException("user.sign.loan_cancelled");
                                         CommonAction.loan(plugin, p, bank, sr.loanAmount);
                                         p.sendMessage(I18n.format("user.sign.input_accepted"));
                                     } catch (CommonAction.TransactionException ex) {
@@ -191,16 +195,18 @@ public class SignListener implements Listener{
             return;
         }
         if (!ev.getPlayer().hasPermission("nb.sign_create_admin")) { // skip bank owner check for admins
-            BankRegistration bank = plugin.dbm.getUniqueBank(sr.getBankId());
+            BankRegistration bank = plugin.dbm.getUniqueBank(sr.bankId);
             if (bank == null || !ev.getPlayer().getUniqueId().equals(bank.ownerId)) {
                 ev.getPlayer().sendMessage(I18n.format("user.sign.create_fail"));
                 return;
             }
         }
         if (newSign) {
-            plugin.dbm.db.query(SignRegistration.class).insert(sr);
+            ;
+            plugin.dbm.tableSignRegistration.insert(sr);
         } else {
-            plugin.dbm.db.query(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).update(sr);
+            ;
+            plugin.dbm.tableSignRegistration.update(sr, WhereClause.EQ(SignRegistration.N_SIGN_ID, sr.signId));
         }
         ev.getPlayer().sendMessage(I18n.format("user.sign.create_success"));
 
@@ -225,14 +231,14 @@ public class SignListener implements Listener{
             return;
         }
         if (!ev.getPlayer().hasPermission("nb.sign_break_admin")) { // skip owner check for admin
-            BankRegistration bank = plugin.dbm.getUniqueBank(sr.getBankId());
+            BankRegistration bank = plugin.dbm.getUniqueBank(sr.bankId);
             if (bank != null && !ev.getPlayer().getUniqueId().equals(bank.ownerId)) {
                 ev.getPlayer().sendMessage(I18n.format("user.sign.break_no_permission"));
                 ev.setCancelled(true);
                 return;
             }
         }
-        plugin.dbm.db.query(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).delete();
+        plugin.dbm.tableSignRegistration.delete(WhereClause.EQ(SignRegistration.N_SIGN_ID, sr.signId));
         ev.getPlayer().sendMessage(I18n.format("user.sign.break_success"));
     }
 }

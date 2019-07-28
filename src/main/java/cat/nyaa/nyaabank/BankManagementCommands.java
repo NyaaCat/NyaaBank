@@ -6,8 +6,12 @@ import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
-import cat.nyaa.nyaacore.CommandReceiver;
 import cat.nyaa.nyaacore.LanguageRepository;
+import cat.nyaa.nyaacore.cmdreceiver.Arguments;
+import cat.nyaa.nyaacore.cmdreceiver.BadCommandException;
+import cat.nyaa.nyaacore.cmdreceiver.CommandReceiver;
+import cat.nyaa.nyaacore.cmdreceiver.SubCommand;
+import cat.nyaa.nyaacore.orm.WhereClause;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import org.bukkit.Bukkit;
@@ -35,11 +39,12 @@ public class BankManagementCommands extends CommandReceiver {
     /**
      * Get unique bank considering sender's permission
      * If sender is not player, ownership check is skipped
-     * @param sender who invoked the command
-     * @param idNumber bank idNumber
-     * @param noBankLang language key to be print when no bank is found
+     *
+     * @param sender          who invoked the command
+     * @param idNumber        bank idNumber
+     * @param noBankLang      language key to be print when no bank is found
      * @param adminPermission permission required to skip the ownership check
-     * @param permissionLang language key for wrong ownership
+     * @param permissionLang  language key for wrong ownership
      * @return the bank
      */
     private BankRegistration getBankWithPermission(CommandSender sender, long idNumber, String noBankLang,
@@ -62,13 +67,11 @@ public class BankManagementCommands extends CommandReceiver {
             String playerName = args.next();
             List<BankRegistration> banks;
             if (playerName == null) {
-                banks = plugin.dbm.db.query(BankRegistration.class).select();
+                banks = plugin.dbm.tableBankRegistration.select(WhereClause.EMPTY);
                 msg(sender, "command.bank_list.list_all");
             } else {
                 UUID id = plugin.getServer().getOfflinePlayer(playerName).getUniqueId();
-                banks = plugin.dbm.db.query(BankRegistration.class)
-                        .whereEq(BankRegistration.N_OWNER_ID, id.toString())
-                        .select();
+                banks = plugin.dbm.tableBankRegistration.select(WhereClause.EQ(BankRegistration.N_OWNER_ID, id));
                 msg(sender, "command.bank_list.list_player", playerName);
             }
             if (banks.size() <= 0) {
@@ -82,9 +85,7 @@ public class BankManagementCommands extends CommandReceiver {
             }
         } else {   // players
             Player p = asPlayer(sender);
-            List<BankRegistration> banks = plugin.dbm.db.query(BankRegistration.class)
-                    .whereEq(BankRegistration.N_OWNER_ID, p.getUniqueId().toString())
-                    .select();
+            List<BankRegistration> banks = plugin.dbm.tableBankRegistration.select(WhereClause.EQ(BankRegistration.N_OWNER_ID, p.getUniqueId()));
 
             msg(sender, "command.bank_list.list_player", p.getName());
             if (banks.size() <= 0) {
@@ -150,9 +151,7 @@ public class BankManagementCommands extends CommandReceiver {
                     }
                 }
                 bank.savingInterestNext = newSaving;
-                plugin.dbm.db.query(BankRegistration.class)
-                        .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
-                        .update(bank, BankRegistration.N_INTEREST_RATE_SAVING_NEXT);
+                plugin.dbm.tableBankRegistration.update(bank, WhereClause.EQ(BankRegistration.N_BANK_ID, bank.bankId), BankRegistration.N_INTEREST_RATE_SAVING_NEXT);
                 break;
             }
             case "LOAN": {
@@ -166,17 +165,13 @@ public class BankManagementCommands extends CommandReceiver {
                     }
                 }
                 bank.debitInterestNext = newLoan;
-                plugin.dbm.db.query(BankRegistration.class)
-                        .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
-                        .update(bank, BankRegistration.N_INTEREST_RATE_DEBIT_NEXT);
+                plugin.dbm.tableBankRegistration.update(bank, WhereClause.EQ(BankRegistration.N_BANK_ID, bank.bankId), BankRegistration.N_INTEREST_RATE_DEBIT_NEXT);
                 break;
             }
             case "TYPE": {
                 InterestType newType = args.nextEnum(InterestType.class);
                 bank.interestTypeNext = newType;
-                plugin.dbm.db.query(BankRegistration.class)
-                        .whereEq(BankRegistration.N_BANK_ID, bank.getBankId())
-                        .update(bank, BankRegistration.N_INTEREST_TYPE_NEXT);
+                plugin.dbm.tableBankRegistration.update(bank, WhereClause.EQ(BankRegistration.N_BANK_ID, bank.bankId), BankRegistration.N_INTEREST_TYPE_NEXT);
                 break;
             }
             default:
@@ -191,16 +186,14 @@ public class BankManagementCommands extends CommandReceiver {
 
         Map<UUID, BankAccount> accounts = new HashMap<>();
         Multimap<UUID, PartialRecord> partials = HashMultimap.create();
-        for (BankAccount a : plugin.dbm.db.query(BankAccount.class)
-                .whereEq(BankAccount.N_BANK_ID, bank.getBankId()).select()) {
+        for (BankAccount a : plugin.dbm.tableBankAccount.select(WhereClause.EQ(BankAccount.N_BANK_ID, bank.bankId))) {
             if (accounts.containsKey(a.playerId)) {
                 plugin.getLogger().severe(String.format("Multiple accounts bank-id=%s, player-id=%s",
                         bank.bankId.toString(), a.playerId));
             }
             accounts.put(a.playerId, a);
         }
-        for (PartialRecord p : plugin.dbm.db.query(PartialRecord.class)
-                .whereEq(PartialRecord.N_BANK_ID, bank.getBankId()).select()) {
+        for (PartialRecord p : plugin.dbm.tablePartialRecord.select(WhereClause.EQ(PartialRecord.N_BANK_ID, bank.bankId))) {
             partials.put(p.playerId, p);
         }
 

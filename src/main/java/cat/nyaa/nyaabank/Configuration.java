@@ -1,6 +1,7 @@
 package cat.nyaa.nyaabank;
 
 import cat.nyaa.nyaacore.configuration.PluginConfigure;
+import cat.nyaa.nyaacore.orm.backends.BackendConfig;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Configuration extends PluginConfigure {
@@ -36,6 +37,9 @@ public class Configuration extends PluginConfigure {
     public String signColorBankrupt = "§l§c";
     @Serializable(name = "sign.timeout")
     public long signTimeout = 7; // seconds
+
+    @Serializable
+    public BackendConfig database = BackendConfig.sqliteBackend("nyaabank.db");
 
     /* Data stored in config file. Do not edit these entries manually */
     @Serializable(name = "data.last_check_point")

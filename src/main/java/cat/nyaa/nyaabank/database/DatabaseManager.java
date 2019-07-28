@@ -2,23 +2,44 @@ package cat.nyaa.nyaabank.database;
 
 import cat.nyaa.nyaabank.NyaaBank;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
-import cat.nyaa.nyaabank.database.tables.BankAccount;
-import cat.nyaa.nyaabank.database.tables.BankRegistration;
-import cat.nyaa.nyaabank.database.tables.PartialRecord;
-import cat.nyaa.nyaabank.database.tables.TransactionLog;
-import cat.nyaa.nyaacore.database.DatabaseUtils;
-import cat.nyaa.nyaacore.database.relational.RelationalDB;
+import cat.nyaa.nyaabank.database.tables.*;
+import cat.nyaa.nyaacore.orm.*;
+import cat.nyaa.nyaacore.orm.backends.IConnectedDatabase;
+import cat.nyaa.nyaacore.orm.backends.ITypedTable;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
-public class DatabaseManager implements Cloneable {
+public class DatabaseManager {
     private final NyaaBank plugin;
-    public final RelationalDB db;
+    public final IConnectedDatabase db;
+    public final ITypedTable<BankAccount> tableBankAccount;
+    public final ITypedTable<BankRegistration> tableBankRegistration;
+    public final ITypedTable<PartialRecord> tablePartialRecord;
+    public final ITypedTable<SignRegistration> tableSignRegistration;
+    public final ITypedTable<TransactionLog> tableTransactionLog;
 
     public DatabaseManager(NyaaBank plugin) {
-        db = DatabaseUtils.get(RelationalDB.class);
         this.plugin = plugin;
+        try {
+            db = DatabaseUtils.connect(plugin, plugin.cfg.database);
+            tableBankAccount = db.getTable(BankAccount.class);
+            tableBankRegistration = db.getTable(BankRegistration.class);
+            tablePartialRecord = db.getTable(PartialRecord.class);
+            tableSignRegistration = db.getTable(SignRegistration.class);
+            tableTransactionLog = db.getTable(TransactionLog.class);
+        } catch (ClassNotFoundException | SQLException ex) {
+            throw new RuntimeException("Failed to connect to database", ex);
+        }
+    }
+
+    public void disconnect() {
+        try {
+            db.close();
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     /**
@@ -29,12 +50,15 @@ public class DatabaseManager implements Cloneable {
      * @return unique bank
      */
     public BankRegistration getUniqueBank(String partialUUID) {
-        if (partialUUID == null || "".equals(partialUUID)) return null;
-        List<BankRegistration> r = db.query(BankRegistration.class)
-                                     .where(BankRegistration.N_BANK_ID, " LIKE ", "%" + partialUUID + "%")
-                                     .select();
-        if (r.isEmpty() || r.size() > 1) return null;
-        return r.get(0);
+        if (partialUUID == null || partialUUID.isEmpty()) return null;
+        return tableBankRegistration.selectUniqueUnchecked(
+                new WhereClause(BankRegistration.N_BANK_ID, " LIKE ", "%" + partialUUID + "%")
+        );
+    }
+
+    public BankRegistration getUniqueBank(UUID bankId) {
+        if (bankId == null) return null;
+        return tableBankRegistration.selectUniqueUnchecked(WhereClause.EQ(BankRegistration.N_BANK_ID, bankId));
     }
 
     /**
@@ -43,14 +67,17 @@ public class DatabaseManager implements Cloneable {
      */
     public BankAccount getAccount(UUID bankId, UUID playerId) {
         BankAccount account = null;
-        List<BankAccount> l = db.query(BankAccount.class)
-                                .whereEq(BankAccount.N_BANK_ID, bankId.toString())
-                                .whereEq(BankAccount.N_PLAYER_ID, playerId.toString())
-                                .select();
+
+        List<BankAccount> l = tableBankAccount.select(
+                new WhereClause()
+                        .whereEq(BankAccount.N_BANK_ID, bankId.toString())
+                        .whereEq(BankAccount.N_PLAYER_ID, playerId.toString())
+        );
+
         if (!l.isEmpty()) {
             if (l.size() > 1) {
                 plugin.getLogger().severe("Duplicated account: bankid:" +
-                                                  bankId.toString() + " playerid:" + playerId.toString());
+                        bankId.toString() + " playerid:" + playerId.toString());
             }
             account = l.get(0);
         }
@@ -58,11 +85,11 @@ public class DatabaseManager implements Cloneable {
     }
 
     public List<PartialRecord> getPartialRecords(UUID bankId, UUID playerId, TransactionType type) {
-        return db.query(PartialRecord.class)
-                 .whereEq(PartialRecord.N_BANK_ID, bankId.toString())
-                 .whereEq(PartialRecord.N_PLAYER_ID, playerId.toString())
-                 .whereEq(PartialRecord.N_TRANSACTION_TYPE, type.name())
-                 .select();
+        return tablePartialRecord.select(new WhereClause()
+                .whereEq(PartialRecord.N_BANK_ID, bankId.toString())
+                .whereEq(PartialRecord.N_PLAYER_ID, playerId.toString())
+                .whereEq(PartialRecord.N_TRANSACTION_TYPE, type.name())
+        );
     }
 
     /**
@@ -107,27 +134,24 @@ public class DatabaseManager implements Cloneable {
      * Return next unused bank id number
      */
     public long getNextIdNumber() {
-        long id = 1;
-        for (BankRegistration b : db.query(BankRegistration.class).select()) {
-            if (b.idNumber >= id) id = b.idNumber + 1;
-        }
-        return id;
+        Long dbMaxId = tableBankRegistration.selectSingleton(String.format("MAX(%s)", BankRegistration.N_ID_NUMBER), DataTypeMapping.LongConverter.INSTANCE);
+        return dbMaxId == null ? 1 : dbMaxId + 1;
     }
 
     public BankRegistration getBankByIdNumber(long idNumber) {
         try {
-            return db.query(BankRegistration.class).whereEq(BankRegistration.N_ID_NUMBER, idNumber).selectUnique();
-        } catch (RuntimeException ex) {
-            if (ex.getMessage() != null && ex.getMessage().startsWith("SQL Selection")) {
-                return null;
-            } else {
-                throw ex;
-            }
+            return tableBankRegistration.selectUnique(WhereClause.EQ(BankRegistration.N_ID_NUMBER, idNumber));
+        } catch (NonUniqueResultException ex) {
+            return null;
         }
     }
 
     /* return a new log entry */
     public TransactionLog log(TransactionType type) {
         return new TransactionLog(this, type);
+    }
+
+    public RollbackGuard acquireRollbackGuard() {
+        return new RollbackGuard(db);
     }
 }

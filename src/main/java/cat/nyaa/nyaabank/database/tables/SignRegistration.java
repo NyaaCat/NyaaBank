@@ -1,16 +1,15 @@
 package cat.nyaa.nyaabank.database.tables;
 
 import cat.nyaa.nyaabank.database.enums.TransactionType;
+import cat.nyaa.nyaacore.orm.annotations.Column;
+import cat.nyaa.nyaacore.orm.annotations.Table;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 
-import javax.persistence.*;
 import java.util.UUID;
 
 /* Information about the signs in world map */
-@Entity
-@Access(AccessType.PROPERTY)
-@Table(name = "sign_registration")
+@Table("sign_registration")
 public class SignRegistration {
     // Data column names
     public static final String N_LOAN_AMOUNT = "loan_amount";
@@ -23,44 +22,22 @@ public class SignRegistration {
     public static final String N_LOCATION_Y = "location_y";
     public static final String N_LOCATION_Z = "location_z";
 
+    @Column(name = N_SIGN_ID, primary = true)
     public UUID signId;
+
+    @Column(name = N_BANK_ID)
     public UUID bankId;
+
+    @Column(name = N_SIGN_TYPE)
     public TransactionType type; // DEPOSIT/WITHDRAW/LOAN/REPAY
-    public Location location;
-    @Access(AccessType.FIELD)
+
     @Column(name = N_LOAN_AMOUNT)
     public Double loanAmount; // for LOAN sign only
-    @Access(AccessType.FIELD)
+
     @Column(name = N_COMMISSION_FEE)
     public Double commissionFee; // for WITHDRAW & REPAY only
 
-    @Id
-    @Column(name = N_SIGN_ID)
-    public String getSignId() {
-        return signId.toString();
-    }
-
-    public void setSignId(String signId) {
-        this.signId = UUID.fromString(signId);
-    }
-
-    @Column(name = N_BANK_ID)
-    public String getBankId() {
-        return bankId.toString();
-    }
-
-    public void setBankId(String bankId) {
-        this.bankId = UUID.fromString(bankId);
-    }
-
-    @Column(name = N_SIGN_TYPE)
-    public String getType() {
-        return type.toString();
-    }
-
-    public void setType(String type) {
-        this.type = TransactionType.valueOf(type);
-    }
+    public Location location;
 
     @Column(name = N_LOCATION_WORLD_NAME)
     public String getWorldName() {

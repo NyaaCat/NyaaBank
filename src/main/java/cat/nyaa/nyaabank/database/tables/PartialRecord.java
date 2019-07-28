@@ -1,15 +1,14 @@
 package cat.nyaa.nyaabank.database.tables;
 
 import cat.nyaa.nyaabank.database.enums.TransactionType;
+import cat.nyaa.nyaacore.orm.annotations.Column;
+import cat.nyaa.nyaacore.orm.annotations.Table;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
 /* New deposit or loan */
-@Entity
-@Access(AccessType.PROPERTY)
-@Table(name = "partial_transactions")
+@Table("partial_transactions")
 public class PartialRecord {
     // Data column names
     public static final String N_CAPITAL = "capital";
@@ -19,42 +18,22 @@ public class PartialRecord {
     public static final String N_START_DATE = "start_date";
     public static final String N_TRANSACTION_TYPE = "transaction_type";
 
+    @Column(name = N_TRANSACTION_ID, primary = true)
     public UUID transactionId;
-    public UUID bankId;
-    public UUID playerId;
-    public Instant startDate; // Stored as Unix timestamp ms
-    @Access(AccessType.FIELD)
-    @Column(name = N_CAPITAL)
-    public Double capital;
-    public TransactionType type; // deposit or loan
-
-    @Column(name = N_TRANSACTION_ID)
-    @Id
-    public String getTransactionId() {
-        return transactionId.toString();
-    }
-
-    public void setTransactionId(String transactionId) {
-        this.transactionId = UUID.fromString(transactionId);
-    }
 
     @Column(name = N_BANK_ID)
-    public String getBankId() {
-        return bankId.toString();
-    }
-
-    public void setBankId(String bankId) {
-        this.bankId = UUID.fromString(bankId);
-    }
+    public UUID bankId;
 
     @Column(name = N_PLAYER_ID)
-    public String getPlayerId() {
-        return playerId.toString();
-    }
+    public UUID playerId;
 
-    public void setPlayerId(String playerId) {
-        this.playerId = UUID.fromString(playerId);
-    }
+    @Column(name = N_CAPITAL)
+    public Double capital;
+
+    @Column(name = N_TRANSACTION_TYPE)
+    public TransactionType type; // deposit or loan
+
+    public Instant startDate; // Stored as Unix timestamp ms
 
     @Column(name = N_START_DATE)
     public Long getStartDate() {
@@ -63,14 +42,5 @@ public class PartialRecord {
 
     public void setStartDate(Long startDate) {
         this.startDate = Instant.ofEpochMilli(startDate);
-    }
-
-    @Column(name = N_TRANSACTION_TYPE)
-    public String getType() {
-        return type.toString();
-    }
-
-    public void setType(String type) {
-        this.type = TransactionType.valueOf(type);
     }
 }

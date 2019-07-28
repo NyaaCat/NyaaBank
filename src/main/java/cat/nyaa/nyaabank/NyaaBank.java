@@ -38,7 +38,6 @@ public class NyaaBank extends JavaPlugin {
         getServer().getScheduler().cancelTasks(this);
         getCommand("nyaabank").setExecutor(null);
         cfg.save();
-        dbm.db.close();
     }
 
     // Reload plugin simply disable the plugin without saving config
@@ -46,7 +45,7 @@ public class NyaaBank extends JavaPlugin {
         HandlerList.unregisterAll(this);
         getServer().getScheduler().cancelTasks(this);
         getCommand("nyaabank").setExecutor(null);
-        dbm.db.close();
+        dbm.disconnect();
         i18n.load();
         onEnable();
     }

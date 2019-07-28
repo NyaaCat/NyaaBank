@@ -5,9 +5,9 @@ import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.tables.BankAccount;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.PartialRecord;
-import cat.nyaa.nyaabank.database.tables.SignRegistration;
 import cat.nyaa.nyaabank.signs.SignHelper;
-import cat.nyaa.nyaacore.database.relational.Query;
+import cat.nyaa.nyaacore.orm.RollbackGuard;
+import cat.nyaa.nyaacore.orm.WhereClause;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -54,7 +54,8 @@ public class CycleManager {
             plugin.cfg.save();
 
             try {
-                SignHelper.batchUpdateSign(plugin, plugin.dbm.db.query(SignRegistration.class).select());
+                SignHelper.batchUpdateSign(plugin,
+                        plugin.dbm.tableSignRegistration.select(WhereClause.EMPTY));
             } catch (Exception e) {
                 throw e;
             }
@@ -119,22 +120,20 @@ public class CycleManager {
     public void updateDatabaseInterests(long designatedTimestamp, long cycleLength) {
         // TODO maybe we can write this as a big SQL query?
         // TODO run in another thread?
-        try {
-            plugin.dbm.db.beginTransaction();
-
+        try (RollbackGuard guard = new RollbackGuard(plugin.dbm.db)) {
             Map<UUID, Map<UUID, BankAccount>> accountMap = new HashMap<>(); // Map<bankId, Map<playerId, Account>>
             Map<UUID, BankRegistration> bankMap = new HashMap<>(); // Map<bankId, BankReg>
-            for (BankAccount a: plugin.dbm.db.query(BankAccount.class).select()) {
+            for (BankAccount a : plugin.dbm.tableBankAccount.select(WhereClause.EMPTY)) {
                 if (!accountMap.containsKey(a.bankId)) accountMap.put(a.bankId, new HashMap<>());
                 accountMap.get(a.bankId).put(a.playerId, a);
             }
-            for (BankRegistration r: plugin.dbm.db.query(BankRegistration.class).select()) {
+            for (BankRegistration r : plugin.dbm.tableBankRegistration.select(WhereClause.EMPTY)) {
                 bankMap.put(r.bankId, r);
             }
             // compute BankAccounts
-            for (UUID bankId: accountMap.keySet()) {
+            for (UUID bankId : accountMap.keySet()) {
                 if (bankMap.get(bankId).status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
-                for (UUID playerId: accountMap.get(bankId).keySet()) {
+                for (UUID playerId : accountMap.get(bankId).keySet()) {
                     BankAccount account = accountMap.get(bankId).get(playerId);
                     BankRegistration bank = bankMap.get(bankId);
                     OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
@@ -184,7 +183,7 @@ public class CycleManager {
             }
 
             // compute Partial Records
-            for (PartialRecord partial: plugin.dbm.db.query(PartialRecord.class).select()) {
+            for (PartialRecord partial : plugin.dbm.tablePartialRecord.select(WhereClause.EMPTY)) {
                 BankRegistration bank = bankMap.get(partial.bankId);
                 if (bank.status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
                 OfflinePlayer banker = plugin.getServer().getOfflinePlayer(bank.ownerId);
@@ -215,20 +214,20 @@ public class CycleManager {
                             account.deposit += partial.capital;
                             account.deposit_interest += deposit_interest;
                             plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
-                                      .extra("partialId", partial.transactionId.toString()).insert();
+                                    .extra("partialId", partial.transactionId.toString()).insert();
                             plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital)
-                                      .extra("partialId", partial.transactionId.toString())
-                                      .extra("target", "DEPOSIT").insert();
+                                    .extra("partialId", partial.transactionId.toString())
+                                    .extra("target", "DEPOSIT").insert();
                         } else if (partial.capital + deposit_interest > 0) { // negative interest i.e. money transferred from player to bank
                             account.deposit += partial.capital + deposit_interest;
                             plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(deposit_interest)
-                                      .extra("partialId", partial.transactionId.toString()).insert();
+                                    .extra("partialId", partial.transactionId.toString()).insert();
                             plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital + deposit_interest)
-                                      .extra("partialId", partial.transactionId.toString())
-                                      .extra("target", "DEPOSIT").insert();
+                                    .extra("partialId", partial.transactionId.toString())
+                                    .extra("target", "DEPOSIT").insert();
                         } else { // bank take all the money
                             plugin.dbm.log(INTEREST_DEPOSIT).from(partial.bankId).to(partial.playerId).capital(-partial.capital)
-                                      .extra("partialId", partial.transactionId.toString()).insert();
+                                    .extra("partialId", partial.transactionId.toString()).insert();
                         }
                         break;
                     }
@@ -241,20 +240,20 @@ public class CycleManager {
                             account.loan += partial.capital;
                             account.loan_interest += loan_interest;
                             plugin.dbm.log(INTEREST_LOAN).from(partial.playerId).to(partial.bankId).capital(loan_interest)
-                                      .extra("partialId", partial.transactionId.toString()).insert();
+                                    .extra("partialId", partial.transactionId.toString()).insert();
                             plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital)
-                                      .extra("partialId", partial.transactionId.toString())
-                                      .extra("target", "LOAN").insert();
+                                    .extra("partialId", partial.transactionId.toString())
+                                    .extra("target", "LOAN").insert();
                         } else if (partial.capital + loan_interest > 0) { // negative interest i.e. money transferred from bank to player
                             account.loan += partial.capital + loan_interest;
                             plugin.dbm.log(INTEREST_LOAN).from(partial.playerId).to(partial.bankId).capital(loan_interest)
-                                      .extra("partialId", partial.transactionId.toString()).insert();
+                                    .extra("partialId", partial.transactionId.toString()).insert();
                             plugin.dbm.log(PARTIAL_MOVE).from(partial.playerId).to(partial.bankId).capital(partial.capital + loan_interest)
-                                      .extra("partialId", partial.transactionId.toString())
-                                      .extra("target", "LOAN").insert();
+                                    .extra("partialId", partial.transactionId.toString())
+                                    .extra("target", "LOAN").insert();
                         } else {
                             plugin.dbm.log(INTEREST_LOAN).from(partial.playerId).to(partial.bankId).capital(-partial.capital)
-                                      .extra("partialId", partial.transactionId.toString()).insert();
+                                    .extra("partialId", partial.transactionId.toString()).insert();
                             // give you the money, nothing need to be done.
                         }
                         break;
@@ -266,12 +265,12 @@ public class CycleManager {
                     if (!accountMap.containsKey(account.bankId))
                         accountMap.put(account.bankId, new HashMap<>());
                     accountMap.get(account.bankId).put(account.playerId, account);
-                    plugin.dbm.db.query(BankAccount.class).insert(account);
+                    plugin.dbm.tableBankAccount.insert(account);
                 }
             }
 
             // update interest := interestNext
-            for (BankRegistration bank: bankMap.values()) {
+            for (BankRegistration bank : bankMap.values()) {
                 if (bank.status == BankStatus.BANKRUPT) continue; // skip bankrupted banks
                 bank.debitInterest = bank.debitInterestNext;
                 bank.savingInterest = bank.savingInterestNext;
@@ -279,24 +278,20 @@ public class CycleManager {
             }
 
             // write to database
-            Query<BankRegistration> query1 = plugin.dbm.db.query(BankRegistration.class);
-            for (BankRegistration bank: bankMap.values()) {
-                query1.reset().whereEq(BankRegistration.N_BANK_ID, bank.getBankId()).update(bank);
+            for (BankRegistration bank : bankMap.values()) {
+                plugin.dbm.tableBankRegistration.update(bank, WhereClause.EQ(BankRegistration.N_BANK_ID, bank.bankId));
             }
-            Query<BankAccount> query2 = plugin.dbm.db.query(BankAccount.class);
-            for (Map<UUID, BankAccount> m: accountMap.values()) {
-                for (BankAccount account: m.values()) {
-                    query2.reset().whereEq(BankAccount.N_ACCOUNT_ID, account.getAccountId()).update(account);
+            for (Map<UUID, BankAccount> m : accountMap.values()) {
+                for (BankAccount account : m.values()) {
+                    plugin.dbm.tableBankAccount.update(account, WhereClause.EQ(BankAccount.N_ACCOUNT_ID, account.accountId));
                 }
             }
-            plugin.dbm.db.query(PartialRecord.class).delete();
+            plugin.dbm.tablePartialRecord.delete(WhereClause.EMPTY);
 
             // Transaction finish
-            plugin.dbm.db.commitTransaction();
-
-        } catch (Exception e) {
-            plugin.dbm.db.rollbackTransaction();
-            throw e;
+            guard.commit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }

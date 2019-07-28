@@ -20,7 +20,7 @@ class ChatInputCallbacks {
         void onDoubleInput(Player p, double input, boolean isAll);
     }
 
-    class InputTimeoutTimer extends BukkitRunnable{
+    class InputTimeoutTimer extends BukkitRunnable {
         private final UUID playerId;
 
         InputTimeoutTimer(UUID id) {
@@ -74,7 +74,7 @@ class ChatInputCallbacks {
             }
             callbacks.remove(playerId);
             timers.remove(playerId);
-            assert(listener == this);
+            assert (listener == this);
             if (callbacks.isEmpty()) {
                 HandlerList.unregisterAll(listener);
                 listener = null;
@@ -94,7 +94,7 @@ class ChatInputCallbacks {
     public void register(UUID player, InputCallback callback) {
         callbacks.put(player, callback);
         InputTimeoutTimer timer = new InputTimeoutTimer(player);
-        timer.runTaskLater(plugin, plugin.cfg.signTimeout*20);
+        timer.runTaskLater(plugin, plugin.cfg.signTimeout * 20);
         timers.put(player, timer);
         if (listener == null) {
             listener = new InputListener();

@@ -6,9 +6,9 @@ import cat.nyaa.nyaabank.database.enums.BankStatus;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
 import cat.nyaa.nyaabank.database.tables.BankRegistration;
 import cat.nyaa.nyaabank.database.tables.SignRegistration;
+import cat.nyaa.nyaacore.orm.WhereClause;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -47,12 +47,12 @@ public final class SignHelper {
      * if no sign registered, return null
      */
     public static SignRegistration getSign(NyaaBank plugin, Location location) {
-        List<SignRegistration> l = plugin.dbm.db.query(SignRegistration.class)
+        List<SignRegistration> l = plugin.dbm.tableSignRegistration.select(new WhereClause()
                 .whereEq(SignRegistration.N_LOCATION_WORLD_NAME, location.getWorld().getName())
                 .whereEq(SignRegistration.N_LOCATION_X, location.getBlockX())
                 .whereEq(SignRegistration.N_LOCATION_Y, location.getBlockY())
                 .whereEq(SignRegistration.N_LOCATION_Z, location.getBlockZ())
-                .select();
+        );
         if (l.size() > 1 || l.size() <= 0) return null;
         return l.get(0);
     }
@@ -71,14 +71,14 @@ public final class SignHelper {
                 !isSignBlock(signLocation.getBlock())) {
             throw new IllegalArgumentException("Not a valid sign block");
         }
-        BankRegistration bank = plugin.dbm.getUniqueBank(signReg.getBankId());
+        BankRegistration bank = plugin.dbm.getUniqueBank(signReg.bankId);
         if (bank == null) {
             throw new IllegalArgumentException("Invalid bank");
         }
-        Sign sign = (Sign)signLocation.getBlock().getState();
+        Sign sign = (Sign) signLocation.getBlock().getState();
         sign.setLine(0, plugin.cfg.signMagic);
-        sign.setLine(1, (bank.status == BankStatus.BANKRUPT? plugin.cfg.signColorBankrupt: plugin.cfg.signColorActive)
-                +bank.name);
+        sign.setLine(1, (bank.status == BankStatus.BANKRUPT ? plugin.cfg.signColorBankrupt : plugin.cfg.signColorActive)
+                + bank.name);
         switch (signReg.type) {
             case LOAN:
                 sign.setLine(2, I18n.format("user.sign.text_loan"));
@@ -165,6 +165,7 @@ public final class SignHelper {
         new BukkitRunnable() {
             int idx = 0;
             boolean cancelled = false;
+
             @Override
             public void run() {
                 if (cancelled) {
@@ -175,7 +176,7 @@ public final class SignHelper {
                 try {
                     updateSignBlock(plugin, sr.location, sr);
                 } catch (IllegalArgumentException ex) { // remove invalid sign registrations
-                    plugin.dbm.db.query(SignRegistration.class).whereEq(SignRegistration.N_SIGN_ID, sr.getSignId()).delete();
+                    plugin.dbm.tableSignRegistration.delete(WhereClause.EQ(SignRegistration.N_SIGN_ID, sr.signId));
                     ex.printStackTrace();
                 }
                 idx++;
@@ -191,7 +192,6 @@ public final class SignHelper {
      * Update all signs of the given bank
      */
     public static void batchUpdateSign(NyaaBank plugin, BankRegistration bank) {
-        batchUpdateSign(plugin, plugin.dbm.db.query(SignRegistration.class)
-                .whereEq(SignRegistration.N_BANK_ID, bank.getBankId()).select());
+        batchUpdateSign(plugin, plugin.dbm.tableSignRegistration.select(WhereClause.EQ(SignRegistration.N_BANK_ID, bank.bankId)));
     }
 }

@@ -3,16 +3,15 @@ package cat.nyaa.nyaabank.database.tables;
 import cat.nyaa.nyaabank.database.DatabaseManager;
 import cat.nyaa.nyaabank.database.enums.AccountType;
 import cat.nyaa.nyaabank.database.enums.TransactionType;
+import cat.nyaa.nyaacore.orm.annotations.Column;
+import cat.nyaa.nyaacore.orm.annotations.Table;
 
-import javax.persistence.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-@Entity
-@Table(name = "transaction_log")
-@Access(AccessType.FIELD)
+@Table("transaction_log")
 public class TransactionLog {
     // Data column names
     public static final String N_ID = "id";
@@ -25,88 +24,31 @@ public class TransactionLog {
     public static final String N_TO_TYPE = "to_type";
     public static final String N_TRANSACTION_TYPE = "transaction_type";
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = N_ID, unique = true, nullable = false)
+    @Column(name = N_ID, primary = true, unique = true, nullable = false)
     public Long id;
 
+    @Column(name = N_TIME)
     private Instant time;
+    @Column(name = N_FROM_ID)
     private UUID from;
+    @Column(name = N_TO_ID)
     private UUID to;
     @Column(name = N_CAPITAL)
     public Double capital;
+    @Column(name = N_FROM_TYPE)
     public AccountType fromType;
+    @Column(name = N_TO_TYPE)
     public AccountType toType;
+    @Column(name = N_TRANSACTION_TYPE)
     public TransactionType type;
     @Column(name = N_EXTRA)
     public String extra;
 
-    @Access(AccessType.PROPERTY)
-    @Column(name = N_TIME)
-    public String getTime() {
-        return time.toString();
-    }
-
-    public void setTime(String time) {
-        this.time = Instant.parse(time);
-    }
-
-    @Access(AccessType.PROPERTY)
-    @Column(name = N_FROM_ID)
-    public String getFrom() {
-        return from.toString();
-    }
-
-    public void setFrom(String from) {
-        this.from = UUID.fromString(from);
-    }
-
-    @Access(AccessType.PROPERTY)
-    @Column(name = N_TO_ID)
-    public String getTo() {
-        return to.toString();
-    }
-
-    public void setTo(String to) {
-        this.to = UUID.fromString(to);
-    }
-
-    @Access(AccessType.PROPERTY)
-    @Column(name = N_FROM_TYPE)
-    public String getFromType() {
-        return fromType.toString();
-    }
-
-    public void setFromType(String fromType) {
-        this.fromType = AccountType.valueOf(fromType);
-    }
-
-
-    @Access(AccessType.PROPERTY)
-    @Column(name = N_TO_TYPE)
-    public String getToType() {
-        return toType.toString();
-    }
-
-    public void setToType(String toType) {
-        this.toType = AccountType.valueOf(toType);
-    }
-
-    @Access(AccessType.PROPERTY)
-    @Column(name = N_TRANSACTION_TYPE)
-    public String getType() {
-        return type.toString();
-    }
-
-    public void setType(String type) {
-        this.type = TransactionType.valueOf(type);
-    }
 
     public TransactionLog() {
 
     }
 
-    @Transient
     private DatabaseManager dbm = null;
 
     public TransactionLog(DatabaseManager dbm, TransactionType ttype) {
@@ -135,25 +77,21 @@ public class TransactionLog {
         this.extra = "";
     }
 
-    @Transient
     public TransactionLog from(UUID id) {
         this.from = id;
         return this;
     }
 
-    @Transient
     public TransactionLog to(UUID id) {
         this.to = id;
         return this;
     }
 
-    @Transient
     public TransactionLog capital(Double capital) {
         this.capital = capital;
         return this;
     }
 
-    @Transient
     private Map<String, String> extraMap = null;
 
     // TODO extra document
@@ -175,6 +113,6 @@ public class TransactionLog {
             }
         }
         extra = "{" + extra + "}";
-        dbm.db.query(TransactionLog.class).insert(this);
+        dbm.tableTransactionLog.insert(this);
     }
 }
