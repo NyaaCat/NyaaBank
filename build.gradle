@@ -1,14 +1,14 @@
 apply plugin: "java-library"
 apply plugin: "maven-publish"
 
+// Plugin config
+ext.pluginNameUpper = "NyaaBank"
+ext.pluginNameLower = ext.pluginNameUpper.toLowerCase()
 ext.majorVersion = 7
 ext.minorVersion = 0
-ext.minecraftVersion = "1.14.3"
+ext.minecraftVersion = "1.14.4"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
-ext.pluginName = "NyaaBank"
-ext.pluginNameLower = pluginName.toLowerCase()
 
 // Suppiled by Jenkins
 ext.buildNumber = System.env.BUILD_NUMBER == null ? "x"                : "$System.env.BUILD_NUMBER"
@@ -17,23 +17,22 @@ ext.jdDirectory = System.env.JAVADOCS_DIR == null ? null               : "$Syste
 
 // Version used for distribution. Different from maven repo
 group = "cat.nyaa"
-archivesBaseName = "${pluginName}-mc$minecraftVersion"
+archivesBaseName = "${pluginNameUpper}-mc$minecraftVersion"
 version = "$majorVersion.$minorVersion.$buildNumber"
 
+// Repositories and dependencies
 repositories {
     jcenter()
     maven { name 'Spigot';      url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { name 'Sonatype';    url 'https://oss.sonatype.org/content/groups/public' }
-    maven { name 'sk89q';       url 'http://maven.sk89q.com/artifactory/repo/' }
     maven { name 'vault-repo';  url 'http://nexus.hc.to/content/repositories/pub_releases' }
     maven { name 'NyaaCat';     url 'https://ci.nyaacat.com/maven/' }
-    maven { name 'EssentialsX'; url 'https://ci.ender.zone/plugin/repository/everything' }
+
 }
 
 dependencies {
-    // spigot
     compileOnly "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
-
+    
     // other nyaa plugins
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         compileOnly project(":NyaaCore")
@@ -45,47 +44,25 @@ dependencies {
     compileOnly ('net.milkbowl.vault:VaultAPI:1.7') { transitive = false }
 }
 
-// publications
-task sourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allJava
-}
-// write javadocs to an external folder which can be served via nginx
-if (ext.jdDirectory != null) {
-    javadoc.destinationDir = file("${jdDirectory}/${pluginNameLower}-${version}")
-}
-task javadocJar(type: Jar) {
-    dependsOn javadoc
-    archiveClassifier = 'javadoc'
-    from javadoc.destinationDir
-}
-processResources { // modify version string
+// source file modification (modify version string)
+processResources {
     filesMatching("**/plugin.yml") {
         expand 'version': project.version
     }
 }
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-            artifact sourcesJar
-            artifact javadocJar
-            
-            groupId "cat.nyaa"
-            artifactId pluginNameLower
-            version "$majorVersion.$minorVersion-SNAPSHOT"
-        }
-    }
-    repositories {
-        maven {
-            url "${mavenDirectory}"
-        }
-    }
+
+// source file jar
+task sourcesJar(type: Jar) {
+    archiveClassifier.set("sources")
+    from sourceSets.main.allSource
 }
 
-// options for generating Javadoc
+// javadoc generation options
 javadoc {
-    (options as StandardJavadocDocletOptions).with {
+    // javadoc output folder
+    if (project.jdDirectory != null) destinationDir = file("${jdDirectory}/${pluginNameLower}-${version}")
+
+    options {
         links 'https://docs.oracle.com/javase/8/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://google.github.io/guava/releases/21.0/api/docs/'
@@ -95,12 +72,45 @@ javadoc {
         encoding 'UTF-8'
         docEncoding 'UTF-8'
         addBooleanOption('keywords', true)
+        addStringOption('Xdoclint:none', '-quiet')
 
         if (JavaVersion.current() > JavaVersion.VERSION_1_9) {
-            options.addBooleanOption('html5', true)
+            addBooleanOption('html5', true)
         }
 
-        windowTitle = "$pluginName Javadoc"
-        docTitle = "$pluginName (mc$minecraftVersion-${project.version})"
+        windowTitle = "${pluginNameUpper} Javadoc"
+        docTitle = "${pluginNameUpper} (mc$minecraftVersion-${project.version})"
     }
 }
+
+// javadoc jar
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier.set("javadoc")
+    from javadoc.destinationDir
+}
+
+// compile options
+compileJava {
+    options.compilerArgs += ["-Xlint:deprecation"]
+}
+
+// maven publish
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            group      project.group
+            artifactId pluginNameLower
+            version    "$majorVersion.$minorVersion-SNAPSHOT"
+
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+    repositories {
+        maven {
+            url mavenDirectory
+        }
+    }
+}
+
