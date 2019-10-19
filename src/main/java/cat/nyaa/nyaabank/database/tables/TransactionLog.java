@@ -24,8 +24,8 @@ public class TransactionLog {
     public static final String N_TO_TYPE = "to_type";
     public static final String N_TRANSACTION_TYPE = "transaction_type";
 
-    @Column(name = N_ID, primary = true, unique = true, nullable = false)
-    public Long id;
+    @Column(name = N_ID, primary = true)
+    public Integer id;
 
     @Column(name = N_TIME)
     private Instant time;

@@ -88,7 +88,7 @@ public class DatabaseManager {
         return tablePartialRecord.select(new WhereClause()
                 .whereEq(PartialRecord.N_BANK_ID, bankId.toString())
                 .whereEq(PartialRecord.N_PLAYER_ID, playerId.toString())
-                .whereEq(PartialRecord.N_TRANSACTION_TYPE, type.name())
+                .whereEq(PartialRecord.N_TRANSACTION_TYPE, type)
         );
     }
 
