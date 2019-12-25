@@ -5,8 +5,8 @@ apply plugin: "maven-publish"
 ext.pluginNameUpper = "NyaaBank"
 ext.pluginNameLower = ext.pluginNameUpper.toLowerCase()
 ext.majorVersion = 7
-ext.minorVersion = 0
-ext.minecraftVersion = "1.14.4"
+ext.minorVersion = 1
+ext.minecraftVersion = "1.15.1"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -32,12 +32,12 @@ repositories {
 
 dependencies {
     compileOnly "org.spigotmc:spigot-api:$minecraftVersion-R0.1-SNAPSHOT"
-    
+
     // other nyaa plugins
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         compileOnly project(":NyaaCore")
     } else {
-        compileOnly('cat.nyaa:nyaacore:7.0-SNAPSHOT') { transitive = false }
+        compileOnly('cat.nyaa:nyaacore:7.1-SNAPSHOT') { transitive = false }
     }
 
     // 3rd party plugins

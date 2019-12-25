@@ -6,4 +6,5 @@ Simplified realistic banking system for players to setup their private bank. Des
 - Vault
 
 ## Version History
+- 7.1.x: Minecraft 1.15.1, since build 65
 - 7.0.x: Minecraft 1.14.4, since build 63
