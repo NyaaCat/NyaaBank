@@ -4,8 +4,8 @@ apply plugin: "maven-publish"
 // Plugin config
 ext.pluginNameUpper = "NyaaBank"
 ext.pluginNameLower = ext.pluginNameUpper.toLowerCase()
-ext.majorVersion = 7
-ext.minorVersion = 2
+ext.majorVersion = 8
+ext.minorVersion = 0
 ext.minecraftVersion = "1.16.1"
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -37,7 +37,7 @@ dependencies {
     if (gradle.hasProperty("useLocalDependencies") && gradle.useLocalDependencies) {
         compileOnly project(":NyaaCore")
     } else {
-        compileOnly('cat.nyaa:nyaacore:7.1-SNAPSHOT') { transitive = false }
+        compileOnly('cat.nyaa:nyaacore:8.0-SNAPSHOT') { transitive = false }
     }
 
     // 3rd party plugins
@@ -63,7 +63,7 @@ javadoc {
     if (project.jdDirectory != null) destinationDir = file("${jdDirectory}/${pluginNameLower}-${version}")
 
     options {
-        links 'https://docs.oracle.com/javase/8/docs/api/'
+        links 'https://docs.oracle.com/en/java/javase/14/docs/api/'
         links 'https://hub.spigotmc.org/javadocs/spigot/'
         links 'https://google.github.io/guava/releases/21.0/api/docs/'
         links 'https://ci.md-5.net/job/BungeeCord/ws/chat/target/apidocs/'
