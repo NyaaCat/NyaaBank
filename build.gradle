@@ -5,10 +5,10 @@ apply plugin: "maven-publish"
 ext.pluginNameUpper = "NyaaBank"
 ext.pluginNameLower = ext.pluginNameUpper.toLowerCase()
 ext.majorVersion = 8
-ext.minorVersion = 0
-ext.minecraftVersion = "1.16.1"
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+ext.minorVersion = 1
+ext.minecraftVersion = "1.17"
+sourceCompatibility = 16
+targetCompatibility = 16
 
 // Suppiled by Jenkins
 ext.buildNumber = System.env.BUILD_NUMBER == null ? "x"                : "$System.env.BUILD_NUMBER"
@@ -22,10 +22,10 @@ version = "$majorVersion.$minorVersion.$buildNumber"
 
 // Repositories and dependencies
 repositories {
-    jcenter()
+    mavenCentral()
     maven { name 'Spigot';      url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { name 'Sonatype';    url 'https://oss.sonatype.org/content/groups/public' }
-    maven { name 'vault-repo';  url 'http://nexus.hc.to/content/repositories/pub_releases' }
+    maven { name 'vault-repo';  url 'https://nexus.hc.to/content/repositories/pub_releases' }
     maven { name 'NyaaCat';     url 'https://ci.nyaacat.com/maven/' }
 
 }
